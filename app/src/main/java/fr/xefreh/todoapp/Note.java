@@ -11,27 +11,29 @@ public class Note {
     private final String title;
     private final String body;
     private final String imageUri;
+    private final long createdAt;
 
     @Ignore
     public Note(String title, String body) {
-        this(null, title, body, null);
+        this(null, title, body, null, System.currentTimeMillis());
     }
 
     @Ignore
     public Note(String title, String body, String imageUri) {
-        this(null, title, body, imageUri);
+        this(null, title, body, imageUri, System.currentTimeMillis());
     }
 
     @Ignore
     public Note(Integer id, String title, String body) {
-        this(null, title, body, null);
+        this(id, title, body, null, System.currentTimeMillis());
     }
 
-    public Note(Integer id, String title, String body, String imageUri) {
+    public Note(Integer id, String title, String body, String imageUri, long createdAt) {
         this.id = id;
         this.title = title;
         this.body = body;
         this.imageUri = imageUri;
+        this.createdAt = createdAt;
     }
 
     public Integer getId() {
@@ -47,5 +49,9 @@ public class Note {
 
     public String getImageUri() {
         return imageUri;
+    }
+
+    public long getCreatedAt() {
+        return createdAt;
     }
 }
