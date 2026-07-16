@@ -1,10 +1,14 @@
 package fr.xefreh.todoapp;
 
+import android.net.Uri;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
 
 import java.util.List;
 
@@ -44,5 +48,17 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
         Note note = notes.get(position);
         holder.binding.titleText.setText(note.getTitle());
         holder.binding.bodyText.setText(note.getBody());
+
+        String imageUri = note.getImageUri();
+        if (imageUri != null) {
+            holder.binding.photoPreview.setVisibility(View.VISIBLE);
+            Glide.with(holder.itemView)
+                    .load(Uri.parse(imageUri))
+                    .centerCrop()
+                    .into(holder.binding.photoPreview);
+        } else {
+            Glide.with(holder.itemView).clear(holder.binding.photoPreview);
+            holder.binding.photoPreview.setVisibility(View.GONE);
+        }
     }
 }
