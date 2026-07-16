@@ -10,6 +10,8 @@
     <string name="hint_title">Title</string>
     <string name="hint_body">Body</string>
 
+    <string name="error_title_required">Title is required</string>
+
     <string name="action_save">Save</string>
     <string name="action_sync">Sync</string>
     <string name="action_add_photo">Add photo</string>

@@ -6,6 +6,8 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -98,9 +100,32 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
 
+        binding.titleInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (!s.toString().trim().isEmpty()) {
+                    binding.titleInputLayout.setError(null);
+                }
+            }
+        });
+
         binding.saveBtn.setOnClickListener((v) -> {
-            String title = binding.titleInput.getText().toString();
+            String title = binding.titleInput.getText().toString().trim();
             String body = binding.bodyInput.getText().toString();
+
+            if (title.isEmpty()) {
+                binding.titleInputLayout.setError(getString(R.string.error_title_required));
+                binding.titleInput.requestFocus();
+                return;
+            }
 
             AppDatabase appDatabase = DatabaseProvider.getDatabase(this);
             // Read photoUri inside the task: the single-threaded executor guarantees a
