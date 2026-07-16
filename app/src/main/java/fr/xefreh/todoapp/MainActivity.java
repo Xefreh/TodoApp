@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -44,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final ActivityResultLauncher<Uri> takePhotoLauncher = registerForActivityResult(new ActivityResultContracts.TakePicture(), wasSaved -> {
         if (wasSaved) {
+            binding.photoCard.setVisibility(View.VISIBLE);
             Glide.with(this).load(photoUri).centerCrop().into(binding.photoPreview);
             Toast.makeText(MainActivity.this, "Photo saved to " + photoFile.getPath(), Toast.LENGTH_LONG).show();
         } else {
@@ -66,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final ActivityResultLauncher<PickVisualMediaRequest> pickImageLauncher = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
         if (uri != null) {
+            binding.photoCard.setVisibility(View.VISIBLE);
             Glide.with(this).load(uri).centerCrop().into(binding.photoPreview);
             importPickedImage(uri);
         }
@@ -84,6 +87,15 @@ public class MainActivity extends AppCompatActivity {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
+        });
+
+        binding.bottomNav.setSelectedItemId(R.id.nav_create);
+        binding.bottomNav.setOnItemSelectedListener(item -> {
+            if (item.getItemId() == R.id.nav_notes) {
+                startActivity(new Intent(this, NotesListActivity.class));
+            }
+            // Keep "New note" highlighted: this activity stays below the notes screen.
+            return false;
         });
 
         binding.saveBtn.setOnClickListener((v) -> {

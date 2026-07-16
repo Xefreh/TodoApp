@@ -1,5 +1,6 @@
 package fr.xefreh.todoapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -25,13 +26,14 @@ import retrofit2.Response;
 
 public class NotesListActivity extends AppCompatActivity {
 
-    private final AppDatabase appDatabase = DatabaseProvider.getDatabase(this);
+    private AppDatabase appDatabase;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+        appDatabase = DatabaseProvider.getDatabase(this);
 
         ActivityNotesListBinding binding = ActivityNotesListBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -41,6 +43,16 @@ public class NotesListActivity extends AppCompatActivity {
             return insets;
         });
         binding.notesList.setLayoutManager(new LinearLayoutManager(this));
+
+        binding.bottomNav.setSelectedItemId(R.id.nav_notes);
+        binding.bottomNav.setOnItemSelectedListener(item -> {
+            if (item.getItemId() == R.id.nav_create) {
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+            }
+            return false;
+        });
 
 
         NotesViewModel viewModel = new ViewModelProvider(this, new ViewModelProvider.Factory() {
