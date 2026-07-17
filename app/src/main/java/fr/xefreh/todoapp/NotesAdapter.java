@@ -1,7 +1,6 @@
 package fr.xefreh.todoapp;
 
 import android.net.Uri;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -12,7 +11,7 @@ import com.bumptech.glide.Glide;
 
 import java.util.List;
 
-import fr.xefreh.todoapp.databinding.ItemNoteBinding;
+import fr.xefreh.todoapp.ui.NoteItemView;
 
 public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHolder> {
 
@@ -23,19 +22,17 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
     }
 
     public static class NoteViewHolder extends RecyclerView.ViewHolder {
-        ItemNoteBinding binding;
+		NoteItemView item;
 
-        public NoteViewHolder(ItemNoteBinding binding) {
-            super(binding.getRoot());
-            this.binding = binding;
+		public NoteViewHolder(NoteItemView item) {
+			super(item);
+			this.item = item;
         }
     }
 
     @Override
     public NoteViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        ItemNoteBinding binding = ItemNoteBinding.inflate(
-                LayoutInflater.from(parent.getContext()), parent, false);
-        return new NoteViewHolder(binding);
+		return new NoteViewHolder(new NoteItemView(parent.getContext()));
     }
 
     @Override
@@ -46,19 +43,19 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
     @Override
     public void onBindViewHolder(@NonNull NoteViewHolder holder, int position) {
         Note note = notes.get(position);
-        holder.binding.titleText.setText(note.getTitle());
-        holder.binding.bodyText.setText(note.getBody());
+		holder.item.titleText.setText(note.getTitle());
+		holder.item.bodyText.setText(note.getBody());
 
         String imageUri = note.getImageUri();
         if (imageUri != null) {
-            holder.binding.photoPreview.setVisibility(View.VISIBLE);
+			holder.item.photoPreview.setVisibility(View.VISIBLE);
             Glide.with(holder.itemView)
                     .load(Uri.parse(imageUri))
                     .centerCrop()
-                    .into(holder.binding.photoPreview);
+					.into(holder.item.photoPreview);
         } else {
-            Glide.with(holder.itemView).clear(holder.binding.photoPreview);
-            holder.binding.photoPreview.setVisibility(View.GONE);
+			Glide.with(holder.itemView).clear(holder.item.photoPreview);
+			holder.item.photoPreview.setVisibility(View.GONE);
         }
     }
 }

@@ -36,19 +36,19 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import fr.xefreh.todoapp.databinding.ActivityMainBinding;
+import fr.xefreh.todoapp.ui.MainScreen;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ActivityMainBinding binding;
+	private MainScreen screen;
     private File photoFile;
     private Uri photoUri;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private final ActivityResultLauncher<Uri> takePhotoLauncher = registerForActivityResult(new ActivityResultContracts.TakePicture(), wasSaved -> {
         if (wasSaved) {
-            binding.photoCard.setVisibility(View.VISIBLE);
-            Glide.with(this).load(photoUri).centerCrop().into(binding.photoPreview);
+			screen.photoCard.setVisibility(View.VISIBLE);
+			Glide.with(this).load(photoUri).centerCrop().into(screen.photoPreview);
             Toast.makeText(MainActivity.this, "Photo saved to " + photoFile.getPath(), Toast.LENGTH_LONG).show();
         } else {
             Toast.makeText(MainActivity.this, "Could not save photo", Toast.LENGTH_SHORT).show();
@@ -70,8 +70,8 @@ public class MainActivity extends AppCompatActivity {
 
     private final ActivityResultLauncher<PickVisualMediaRequest> pickImageLauncher = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
         if (uri != null) {
-            binding.photoCard.setVisibility(View.VISIBLE);
-            Glide.with(this).load(uri).centerCrop().into(binding.photoPreview);
+			screen.photoCard.setVisibility(View.VISIBLE);
+			Glide.with(this).load(uri).centerCrop().into(screen.photoPreview);
             importPickedImage(uri);
         }
     });
@@ -81,26 +81,25 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
+		screen = new MainScreen(this);
+		setContentView(screen.root);
 
-        setContentView(binding.getRoot());
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
+		ViewCompat.setOnApplyWindowInsetsListener(screen.root, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        binding.bottomNav.setSelectedItemId(R.id.nav_create);
-        binding.bottomNav.setOnItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.nav_notes) {
+		screen.selectCreateNavigationItem();
+		screen.bottomNavigation.setOnItemSelectedListener(item -> {
+			if (screen.isNotesNavigationItem(item.getItemId())) {
                 startActivity(new Intent(this, NotesListActivity.class));
             }
             // Keep "New note" highlighted: this activity stays below the notes screen.
             return false;
         });
 
-        binding.titleInput.addTextChangedListener(new TextWatcher() {
+		screen.titleInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
@@ -112,18 +111,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 if (!s.toString().trim().isEmpty()) {
-                    binding.titleInputLayout.setError(null);
+					screen.titleInputLayout.setError(null);
                 }
             }
         });
 
-        binding.saveBtn.setOnClickListener((v) -> {
-            String title = binding.titleInput.getText().toString().trim();
-            String body = binding.bodyInput.getText().toString();
+		screen.saveButton.setOnClickListener((v) -> {
+			String title = screen.titleInput.getText().toString().trim();
+			String body = screen.bodyInput.getText().toString();
 
             if (title.isEmpty()) {
-                binding.titleInputLayout.setError(getString(R.string.error_title_required));
-                binding.titleInput.requestFocus();
+				screen.titleInputLayout.setError(getString(R.string.error_title_required));
+				screen.titleInput.requestFocus();
                 return;
             }
 
@@ -139,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
             });
         });
 
-        binding.attachPhotoBtn.setOnClickListener((v -> {
+		screen.attachPhotoButton.setOnClickListener((v -> {
             new AlertDialog.Builder(this).setTitle("Add Photo").setItems(new String[]{"Take Photo", "Choose from Gallery"}, (dialog, which) -> {
                 if (which == 0) {
                     boolean hasCamera = getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY);

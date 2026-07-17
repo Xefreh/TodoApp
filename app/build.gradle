@@ -8,10 +8,6 @@ android {
         version = release(37)
     }
 
-    buildFeatures {
-        viewBinding true
-    }
-
     defaultConfig {
         applicationId "fr.xefreh.todoapp"
         minSdk 35

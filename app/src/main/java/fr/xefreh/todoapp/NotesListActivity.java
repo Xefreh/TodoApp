@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import fr.xefreh.todoapp.databinding.ActivityNotesListBinding;
+import fr.xefreh.todoapp.ui.NotesListScreen;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -35,18 +35,18 @@ public class NotesListActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         appDatabase = DatabaseProvider.getDatabase(this);
 
-        ActivityNotesListBinding binding = ActivityNotesListBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-        ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
+		NotesListScreen screen = new NotesListScreen(this);
+		setContentView(screen.root);
+		ViewCompat.setOnApplyWindowInsetsListener(screen.root, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        binding.notesList.setLayoutManager(new LinearLayoutManager(this));
+		screen.notesList.setLayoutManager(new LinearLayoutManager(this));
 
-        binding.bottomNav.setSelectedItemId(R.id.nav_notes);
-        binding.bottomNav.setOnItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.nav_create) {
+		screen.selectNotesNavigationItem();
+		screen.bottomNavigation.setOnItemSelectedListener(item -> {
+			if (screen.isCreateNavigationItem(item.getItemId())) {
                 Intent intent = new Intent(this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
@@ -63,9 +63,9 @@ public class NotesListActivity extends AppCompatActivity {
             }
         }).get(NotesViewModel.class);
 
-        viewModel.getNotes().observe(this, notes -> setNotesAdapter(notes, binding));
+		viewModel.getNotes().observe(this, notes -> setNotesAdapter(notes, screen));
 
-        binding.syncBtn.setOnClickListener((v -> {
+		screen.syncButton.setOnClickListener((v -> {
             JsonPlaceholderApi retrofitApi = RetrofitProvider.getApi();
             retrofitApi.getPosts().enqueue(new Callback<>() {
                 @Override
@@ -88,8 +88,8 @@ public class NotesListActivity extends AppCompatActivity {
         }));
     }
 
-    private static void setNotesAdapter(List<Note> notes, ActivityNotesListBinding binding) {
+	private static void setNotesAdapter(List<Note> notes, NotesListScreen screen) {
         NotesAdapter notesAdapter = new NotesAdapter(notes);
-        binding.notesList.setAdapter(notesAdapter);
+		screen.notesList.setAdapter(notesAdapter);
     }
 }
