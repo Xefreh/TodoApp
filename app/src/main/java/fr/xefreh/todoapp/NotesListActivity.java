@@ -26,70 +26,70 @@ import retrofit2.Response;
 
 public class NotesListActivity extends AppCompatActivity {
 
-    private AppDatabase appDatabase;
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+	private AppDatabase appDatabase;
+	private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        appDatabase = DatabaseProvider.getDatabase(this);
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		EdgeToEdge.enable(this);
+		appDatabase = DatabaseProvider.getDatabase(this);
 
 		NotesListScreen screen = new NotesListScreen(this);
 		setContentView(screen.root);
 		ViewCompat.setOnApplyWindowInsetsListener(screen.root, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+			return insets;
+		});
 		screen.notesList.setLayoutManager(new LinearLayoutManager(this));
 
 		screen.selectNotesNavigationItem();
 		screen.bottomNavigation.setOnItemSelectedListener(item -> {
 			if (screen.isCreateNavigationItem(item.getItemId())) {
-                Intent intent = new Intent(this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
-            }
-            return false;
-        });
+				Intent intent = new Intent(this, MainActivity.class);
+				intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+				startActivity(intent);
+			}
+			return false;
+		});
 
 
-        NotesViewModel viewModel = new ViewModelProvider(this, new ViewModelProvider.Factory() {
-            @NonNull
-            @Override
-            public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-                return (T) new NotesViewModel(appDatabase);
-            }
-        }).get(NotesViewModel.class);
+		NotesViewModel viewModel = new ViewModelProvider(this, new ViewModelProvider.Factory() {
+			@NonNull
+			@Override
+			public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+				return (T) new NotesViewModel(appDatabase);
+			}
+		}).get(NotesViewModel.class);
 
 		viewModel.getNotes().observe(this, notes -> setNotesAdapter(notes, screen));
 
 		screen.syncButton.setOnClickListener((v -> {
-            JsonPlaceholderApi retrofitApi = RetrofitProvider.getApi();
-            retrofitApi.getPosts().enqueue(new Callback<>() {
-                @Override
-                public void onResponse(@NonNull Call<List<PostResponse>> call, @NonNull Response<List<PostResponse>> response) {
-                    List<PostResponse> posts = response.body();
+			JsonPlaceholderApi retrofitApi = RetrofitProvider.getApi();
+			retrofitApi.getPosts().enqueue(new Callback<>() {
+				@Override
+				public void onResponse(@NonNull Call<List<PostResponse>> call, @NonNull Response<List<PostResponse>> response) {
+					List<PostResponse> posts = response.body();
 
-                    if (posts == null || posts.isEmpty()) {
-                        Toast.makeText(NotesListActivity.this, "No posts to sync", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
+					if (posts == null || posts.isEmpty()) {
+						Toast.makeText(NotesListActivity.this, "No posts to sync", Toast.LENGTH_SHORT).show();
+						return;
+					}
 
-                    executorService.execute(() -> posts.forEach((p) -> appDatabase.noteDao().insert(new Note(p.getId(), p.getTitle(), p.getBody()))));
-                }
+					executorService.execute(() -> posts.forEach((p) -> appDatabase.noteDao().insert(new Note(p.getId(), p.getTitle(), p.getBody()))));
+				}
 
-                @Override
-                public void onFailure(@NonNull Call<List<PostResponse>> call, @NonNull Throwable t) {
-                    Log.e("NotesListActivity", "Fetch failed", t);
-                }
-            });
-        }));
-    }
+				@Override
+				public void onFailure(@NonNull Call<List<PostResponse>> call, @NonNull Throwable t) {
+					Log.e("NotesListActivity", "Fetch failed", t);
+				}
+			});
+		}));
+	}
 
 	private static void setNotesAdapter(List<Note> notes, NotesListScreen screen) {
-        NotesAdapter notesAdapter = new NotesAdapter(notes);
+		NotesAdapter notesAdapter = new NotesAdapter(notes);
 		screen.notesList.setAdapter(notesAdapter);
-    }
+	}
 }

@@ -12,12 +12,12 @@ import java.util.List;
 @Dao
 public interface NoteDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insert(Note note);
+	@Insert(onConflict = OnConflictStrategy.REPLACE)
+	void insert(Note note);
 
-    @Query("SELECT * FROM notes ORDER BY createdAt DESC")
-    LiveData<List<Note>> getAllLive();
+	@Query("SELECT * FROM notes ORDER BY createdAt DESC")
+	LiveData<List<Note>> getAllLive();
 
-    @Delete
-    void delete(Note note);
+	@Delete
+	void delete(Note note);
 }

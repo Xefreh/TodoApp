@@ -41,150 +41,150 @@ import fr.xefreh.todoapp.ui.MainScreen;
 public class MainActivity extends AppCompatActivity {
 
 	private MainScreen screen;
-    private File photoFile;
-    private Uri photoUri;
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+	private File photoFile;
+	private Uri photoUri;
+	private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-    private final ActivityResultLauncher<Uri> takePhotoLauncher = registerForActivityResult(new ActivityResultContracts.TakePicture(), wasSaved -> {
-        if (wasSaved) {
+	private final ActivityResultLauncher<Uri> takePhotoLauncher = registerForActivityResult(new ActivityResultContracts.TakePicture(), wasSaved -> {
+		if (wasSaved) {
 			screen.photoCard.setVisibility(View.VISIBLE);
 			Glide.with(this).load(photoUri).centerCrop().into(screen.photoPreview);
-            Toast.makeText(MainActivity.this, "Photo saved to " + photoFile.getPath(), Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(MainActivity.this, "Could not save photo", Toast.LENGTH_SHORT).show();
-        }
-    });
+			Toast.makeText(MainActivity.this, "Photo saved to " + photoFile.getPath(), Toast.LENGTH_LONG).show();
+		} else {
+			Toast.makeText(MainActivity.this, "Could not save photo", Toast.LENGTH_SHORT).show();
+		}
+	});
 
-    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-        if (isGranted) {
-            launchCamera();
-        } else {
-            boolean shouldShow = shouldShowRequestPermissionRationale(Manifest.permission.CAMERA);
-            if (shouldShow) {
-                new AlertDialog.Builder(this).setTitle("Camera access needed").setMessage("This lets you attach a photo directly to your notes. Without it, you can still add photos from your gallery.").setPositiveButton("Try Again", (dialog, which) -> MainActivity.this.requestPermissionLauncher.launch(Manifest.permission.CAMERA)).setNegativeButton("Cancel", null).show();
-            } else {
-                Toast.makeText(MainActivity.this, "Camera permission is disabled. Enable it in Settings", Toast.LENGTH_SHORT).show();
-            }
-        }
-    });
+	private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+		if (isGranted) {
+			launchCamera();
+		} else {
+			boolean shouldShow = shouldShowRequestPermissionRationale(Manifest.permission.CAMERA);
+			if (shouldShow) {
+				new AlertDialog.Builder(this).setTitle("Camera access needed").setMessage("This lets you attach a photo directly to your notes. Without it, you can still add photos from your gallery.").setPositiveButton("Try Again", (dialog, which) -> MainActivity.this.requestPermissionLauncher.launch(Manifest.permission.CAMERA)).setNegativeButton("Cancel", null).show();
+			} else {
+				Toast.makeText(MainActivity.this, "Camera permission is disabled. Enable it in Settings", Toast.LENGTH_SHORT).show();
+			}
+		}
+	});
 
-    private final ActivityResultLauncher<PickVisualMediaRequest> pickImageLauncher = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
-        if (uri != null) {
+	private final ActivityResultLauncher<PickVisualMediaRequest> pickImageLauncher = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+		if (uri != null) {
 			screen.photoCard.setVisibility(View.VISIBLE);
 			Glide.with(this).load(uri).centerCrop().into(screen.photoPreview);
-            importPickedImage(uri);
-        }
-    });
+			importPickedImage(uri);
+		}
+	});
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		EdgeToEdge.enable(this);
 
 		screen = new MainScreen(this);
 		setContentView(screen.root);
 
 		ViewCompat.setOnApplyWindowInsetsListener(screen.root, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+			return insets;
+		});
 
 		screen.selectCreateNavigationItem();
 		screen.bottomNavigation.setOnItemSelectedListener(item -> {
 			if (screen.isNotesNavigationItem(item.getItemId())) {
-                startActivity(new Intent(this, NotesListActivity.class));
-            }
-            // Keep "New note" highlighted: this activity stays below the notes screen.
-            return false;
-        });
+				startActivity(new Intent(this, NotesListActivity.class));
+			}
+			// Keep "New note" highlighted: this activity stays below the notes screen.
+			return false;
+		});
 
 		screen.titleInput.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+			}
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+			}
 
-            @Override
-            public void afterTextChanged(Editable s) {
-                if (!s.toString().trim().isEmpty()) {
+			@Override
+			public void afterTextChanged(Editable s) {
+				if (!s.toString().trim().isEmpty()) {
 					screen.titleInputLayout.setError(null);
-                }
-            }
-        });
+				}
+			}
+		});
 
 		screen.saveButton.setOnClickListener((v) -> {
 			String title = screen.titleInput.getText().toString().trim();
 			String body = screen.bodyInput.getText().toString();
 
-            if (title.isEmpty()) {
+			if (title.isEmpty()) {
 				screen.titleInputLayout.setError(getString(R.string.error_title_required));
 				screen.titleInput.requestFocus();
-                return;
-            }
+				return;
+			}
 
-            AppDatabase appDatabase = DatabaseProvider.getDatabase(this);
-            // Read photoUri inside the task: the single-threaded executor guarantees a
-            // pending gallery-image copy submitted earlier has finished by then.
-            executorService.execute(() -> {
-                String imageUri = photoUri != null ? photoUri.toString() : null;
-                appDatabase.noteDao().insert(new Note(title, body, imageUri));
+			AppDatabase appDatabase = DatabaseProvider.getDatabase(this);
+			// Read photoUri inside the task: the single-threaded executor guarantees a
+			// pending gallery-image copy submitted earlier has finished by then.
+			executorService.execute(() -> {
+				String imageUri = photoUri != null ? photoUri.toString() : null;
+				appDatabase.noteDao().insert(new Note(title, body, imageUri));
 
-                Intent intent = new Intent(MainActivity.this, NotesListActivity.class);
-                startActivity(intent);
-            });
-        });
+				Intent intent = new Intent(MainActivity.this, NotesListActivity.class);
+				startActivity(intent);
+			});
+		});
 
 		screen.attachPhotoButton.setOnClickListener((v -> {
-            new AlertDialog.Builder(this).setTitle("Add Photo").setItems(new String[]{"Take Photo", "Choose from Gallery"}, (dialog, which) -> {
-                if (which == 0) {
-                    boolean hasCamera = getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY);
+			new AlertDialog.Builder(this).setTitle("Add Photo").setItems(new String[]{"Take Photo", "Choose from Gallery"}, (dialog, which) -> {
+				if (which == 0) {
+					boolean hasCamera = getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY);
 
-                    if (!hasCamera) {
-                        Toast.makeText(MainActivity.this, "Device has no camera", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
+					if (!hasCamera) {
+						Toast.makeText(MainActivity.this, "Device has no camera", Toast.LENGTH_SHORT).show();
+						return;
+					}
 
-                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-                        launchCamera();
-                    } else {
-                        requestPermissionLauncher.launch(Manifest.permission.CAMERA);
-                    }
-                } else {
-                    pickImageLauncher.launch(new PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE).build());
-                }
-            }).show();
-        }));
-    }
+					if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+						launchCamera();
+					} else {
+						requestPermissionLauncher.launch(Manifest.permission.CAMERA);
+					}
+				} else {
+					pickImageLauncher.launch(new PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE).build());
+				}
+			}).show();
+		}));
+	}
 
-    private void launchCamera() {
-        photoFile = createPhotoFile();
-        photoUri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", photoFile);
-        takePhotoLauncher.launch(photoUri);
-    }
+	private void launchCamera() {
+		photoFile = createPhotoFile();
+		photoUri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", photoFile);
+		takePhotoLauncher.launch(photoUri);
+	}
 
-    private void importPickedImage(Uri sourceUri) {
-        File destFile = createPhotoFile();
-        executorService.execute(() -> {
-            try (InputStream in = getContentResolver().openInputStream(sourceUri)) {
-                if (in == null) {
-                    throw new IOException("Could not open " + sourceUri);
-                }
-                Files.copy(in, destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                photoFile = destFile;
-                photoUri = FileProvider.getUriForFile(MainActivity.this, getPackageName() + ".fileprovider", destFile);
-            } catch (IOException e) {
-                Log.e("MainActivity", "Could not import picked image", e);
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Could not import image", Toast.LENGTH_SHORT).show());
-            }
-        });
-    }
+	private void importPickedImage(Uri sourceUri) {
+		File destFile = createPhotoFile();
+		executorService.execute(() -> {
+			try (InputStream in = getContentResolver().openInputStream(sourceUri)) {
+				if (in == null) {
+					throw new IOException("Could not open " + sourceUri);
+				}
+				Files.copy(in, destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				photoFile = destFile;
+				photoUri = FileProvider.getUriForFile(MainActivity.this, getPackageName() + ".fileprovider", destFile);
+			} catch (IOException e) {
+				Log.e("MainActivity", "Could not import picked image", e);
+				runOnUiThread(() -> Toast.makeText(MainActivity.this, "Could not import image", Toast.LENGTH_SHORT).show());
+			}
+		});
+	}
 
-    private File createPhotoFile() {
-        String photoName = "todoapp-photo-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")) + ".jpg";
-        return new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), photoName);
-    }
+	private File createPhotoFile() {
+		String photoName = "todoapp-photo-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")) + ".jpg";
+		return new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), photoName);
+	}
 }

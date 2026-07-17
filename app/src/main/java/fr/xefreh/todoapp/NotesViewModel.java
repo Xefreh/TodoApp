@@ -6,13 +6,13 @@ import androidx.lifecycle.ViewModel;
 import java.util.List;
 
 public class NotesViewModel extends ViewModel {
-    private final AppDatabase appDatabase;
+	private final AppDatabase appDatabase;
 
-    public NotesViewModel(AppDatabase appDatabase) {
-        this.appDatabase = appDatabase;
-    }
+	public NotesViewModel(AppDatabase appDatabase) {
+		this.appDatabase = appDatabase;
+	}
 
-    public LiveData<List<Note>> getNotes() {
-        return appDatabase.noteDao().getAllLive();
-    }
+	public LiveData<List<Note>> getNotes() {
+		return appDatabase.noteDao().getAllLive();
+	}
 }
