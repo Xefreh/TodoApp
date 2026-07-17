@@ -1,7 +1,9 @@
 package fr.xefreh.todoapp.ui;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -46,15 +48,15 @@ public final class NoteItemView extends MaterialCardView {
 		titleText = new TextView(context);
 		titleText.setTextAppearance(ViewUtils.resolveStyle(
 				context, com.google.android.material.R.attr.textAppearanceTitleMedium));
-		textContainer.addView(titleText, matchWrap());
+		textContainer.addView(titleText, matchWidthWrapHeight());
 
 		bodyText = new TextView(context);
 		bodyText.setTextAppearance(ViewUtils.resolveStyle(
 				context, com.google.android.material.R.attr.textAppearanceBodyMedium));
-		bodyText.setTextColor(resolveSecondaryTextColor(context));
+		bodyText.setTextColor(resolveSecondaryTextColors(context));
 		bodyText.setEllipsize(TextUtils.TruncateAt.END);
 		bodyText.setMaxLines(3);
-		LinearLayout.LayoutParams bodyParams = matchWrap();
+		LinearLayout.LayoutParams bodyParams = matchWidthWrapHeight();
 		bodyParams.topMargin = ViewUtils.dp(context, 4);
 		textContainer.addView(bodyText, bodyParams);
 	}
@@ -68,13 +70,15 @@ public final class NoteItemView extends MaterialCardView {
 		return params;
 	}
 
-	private static int resolveSecondaryTextColor(Context context) {
-		android.util.TypedValue value = new android.util.TypedValue();
+	private static ColorStateList resolveSecondaryTextColors(Context context) {
+		TypedValue value = new TypedValue();
 		context.getTheme().resolveAttribute(android.R.attr.textColorSecondary, value, true);
-		return value.data;
+		return value.resourceId != 0
+				? context.getColorStateList(value.resourceId)
+				: ColorStateList.valueOf(value.data);
 	}
 
-	private static LinearLayout.LayoutParams matchWrap() {
+	private static LinearLayout.LayoutParams matchWidthWrapHeight() {
 		return new LinearLayout.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT);

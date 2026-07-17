@@ -9,6 +9,10 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import fr.xefreh.todoapp.R;
 
 final class BottomNavigationFactory {
+	private static final int NAVIGATION_GROUP_ID = Menu.NONE;
+	private static final int CREATE_ITEM_ORDER = 0;
+	private static final int NOTES_ITEM_ORDER = 1;
+
 	static final int NAV_CREATE = 1;
 	static final int NAV_NOTES = 2;
 
@@ -20,9 +24,9 @@ final class BottomNavigationFactory {
 		navigation.setId(ViewGroup.generateViewId());
 
 		Menu menu = navigation.getMenu();
-		menu.add(Menu.NONE, NAV_CREATE, 0, R.string.nav_new_note)
+		menu.add(NAVIGATION_GROUP_ID, NAV_CREATE, CREATE_ITEM_ORDER, R.string.nav_new_note)
 				.setIcon(R.drawable.ic_edit_24);
-		menu.add(Menu.NONE, NAV_NOTES, 1, R.string.nav_notes)
+		menu.add(NAVIGATION_GROUP_ID, NAV_NOTES, NOTES_ITEM_ORDER, R.string.nav_notes)
 				.setIcon(R.drawable.ic_list_24);
 		return navigation;
 	}

@@ -60,7 +60,7 @@ public final class MainScreen {
 		heading.setText(R.string.title_new_note);
 		heading.setTextAppearance(ViewUtils.resolveStyle(
 				context, com.google.android.material.R.attr.textAppearanceHeadlineSmall));
-		LinearLayout.LayoutParams headingParams = matchWrap();
+		LinearLayout.LayoutParams headingParams = matchWidthWrapHeight();
 		headingParams.bottomMargin = padding;
 		content.addView(heading, headingParams);
 
@@ -69,8 +69,8 @@ public final class MainScreen {
 		titleInputLayout.setHint(R.string.hint_title);
 		titleInput = new TextInputEditText(titleInputLayout.getContext());
 		titleInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-		titleInputLayout.addView(titleInput, matchWrap());
-		content.addView(titleInputLayout, matchWrap());
+		titleInputLayout.addView(titleInput, matchWidthWrapHeight());
+		content.addView(titleInputLayout, matchWidthWrapHeight());
 
 		TextInputLayout bodyInputLayout = new TextInputLayout(
 				context, null, com.google.android.material.R.attr.textInputOutlinedStyle);
@@ -81,8 +81,8 @@ public final class MainScreen {
 				| InputType.TYPE_TEXT_FLAG_MULTI_LINE
 				| InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
 		bodyInput.setMinLines(6);
-		bodyInputLayout.addView(bodyInput, matchWrap());
-		LinearLayout.LayoutParams bodyParams = matchWrap();
+		bodyInputLayout.addView(bodyInput, matchWidthWrapHeight());
+		LinearLayout.LayoutParams bodyParams = matchWidthWrapHeight();
 		bodyParams.topMargin = ViewUtils.dp(context, 12);
 		content.addView(bodyInputLayout, bodyParams);
 
@@ -90,7 +90,7 @@ public final class MainScreen {
 				context, null, com.google.android.material.R.attr.materialButtonOutlinedStyle);
 		attachPhotoButton.setText(R.string.action_add_photo);
 		attachPhotoButton.setIconResource(R.drawable.baseline_add_a_photo_24);
-		LinearLayout.LayoutParams attachParams = matchWrap();
+		LinearLayout.LayoutParams attachParams = matchWidthWrapHeight();
 		attachParams.topMargin = ViewUtils.dp(context, 12);
 		content.addView(attachPhotoButton, attachParams);
 
@@ -102,13 +102,13 @@ public final class MainScreen {
 		photoPreview.setScaleType(ImageView.ScaleType.CENTER_CROP);
 		photoCard.addView(photoPreview, new ViewGroup.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT, ViewUtils.dp(context, 200)));
-		LinearLayout.LayoutParams photoParams = matchWrap();
+		LinearLayout.LayoutParams photoParams = matchWidthWrapHeight();
 		photoParams.topMargin = ViewUtils.dp(context, 12);
 		content.addView(photoCard, photoParams);
 
 		saveButton = new MaterialButton(context);
 		saveButton.setText(R.string.action_save);
-		LinearLayout.LayoutParams saveParams = matchWrap();
+		LinearLayout.LayoutParams saveParams = matchWidthWrapHeight();
 		saveParams.topMargin = padding;
 		content.addView(saveButton, saveParams);
 
@@ -139,7 +139,7 @@ public final class MainScreen {
 		return itemId == BottomNavigationFactory.NAV_NOTES;
 	}
 
-	private static LinearLayout.LayoutParams matchWrap() {
+	private static LinearLayout.LayoutParams matchWidthWrapHeight() {
 		return new LinearLayout.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT);
