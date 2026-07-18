@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
@@ -43,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
 	private MainScreen screen;
 	private File photoFile;
 	private Uri photoUri;
+	private SwipeNavigationDetector swipeNavigationDetector;
+	private boolean isOpeningNotes;
 	private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
 	private final ActivityResultLauncher<Uri> takePhotoLauncher = registerForActivityResult(new ActivityResultContracts.TakePicture(), wasSaved -> {
@@ -83,6 +86,10 @@ public class MainActivity extends AppCompatActivity {
 
 		screen = new MainScreen(this);
 		setContentView(screen.root);
+		swipeNavigationDetector = new SwipeNavigationDetector(
+				this,
+				SwipeNavigationDetector.Direction.LEFT,
+				this::openNotes);
 
 		ViewCompat.setOnApplyWindowInsetsListener(screen.root, (v, insets) -> {
 			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -93,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
 		screen.selectCreateNavigationItem();
 		screen.bottomNavigation.setOnItemSelectedListener(item -> {
 			if (screen.isNotesNavigationItem(item.getItemId())) {
-				startActivity(new Intent(this, NotesListActivity.class));
+				openNotes();
 			}
 			// Keep "New note" highlighted: this activity stays below the notes screen.
 			return false;
@@ -158,6 +165,28 @@ public class MainActivity extends AppCompatActivity {
 				}
 			}).show();
 		}));
+	}
+
+	@Override
+	public boolean dispatchTouchEvent(MotionEvent event) {
+		if (swipeNavigationDetector != null) {
+			swipeNavigationDetector.onTouchEvent(event);
+		}
+		return super.dispatchTouchEvent(event);
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		isOpeningNotes = false;
+	}
+
+	private void openNotes() {
+		if (isOpeningNotes) {
+			return;
+		}
+		isOpeningNotes = true;
+		startActivity(new Intent(this, NotesListActivity.class));
 	}
 
 	private void launchCamera() {

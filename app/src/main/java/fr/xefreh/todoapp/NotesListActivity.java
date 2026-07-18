@@ -3,6 +3,7 @@ package fr.xefreh.todoapp;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -27,6 +28,8 @@ import retrofit2.Response;
 public class NotesListActivity extends AppCompatActivity {
 
 	private AppDatabase appDatabase;
+	private SwipeNavigationDetector swipeNavigationDetector;
+	private boolean isReturningToEditor;
 	private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
 	@Override
@@ -37,6 +40,10 @@ public class NotesListActivity extends AppCompatActivity {
 
 		NotesListScreen screen = new NotesListScreen(this);
 		setContentView(screen.root);
+		swipeNavigationDetector = new SwipeNavigationDetector(
+				this,
+				SwipeNavigationDetector.Direction.RIGHT,
+				this::returnToEditor);
 		ViewCompat.setOnApplyWindowInsetsListener(screen.root, (v, insets) -> {
 			Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
 			v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -47,9 +54,7 @@ public class NotesListActivity extends AppCompatActivity {
 		screen.selectNotesNavigationItem();
 		screen.bottomNavigation.setOnItemSelectedListener(item -> {
 			if (screen.isCreateNavigationItem(item.getItemId())) {
-				Intent intent = new Intent(this, MainActivity.class);
-				intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-				startActivity(intent);
+				returnToEditor();
 			}
 			return false;
 		});
@@ -86,6 +91,25 @@ public class NotesListActivity extends AppCompatActivity {
 				}
 			});
 		}));
+	}
+
+	@Override
+	public boolean dispatchTouchEvent(MotionEvent event) {
+		if (swipeNavigationDetector != null) {
+			swipeNavigationDetector.onTouchEvent(event);
+		}
+		return super.dispatchTouchEvent(event);
+	}
+
+	private void returnToEditor() {
+		if (isReturningToEditor) {
+			return;
+		}
+		isReturningToEditor = true;
+		Intent intent = new Intent(this, MainActivity.class);
+		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+		startActivity(intent);
+		finish();
 	}
 
 	private static void setNotesAdapter(List<Note> notes, NotesListScreen screen) {
