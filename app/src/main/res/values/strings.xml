@@ -18,4 +18,26 @@
 
 	<string name="photo_preview_description">Preview of the attached photo</string>
 	<string name="note_photo_description">Photo attached to the note</string>
+
+	<string name="title_login">Sign in</string>
+	<string name="title_register">Create account</string>
+	<string name="hint_username">Username</string>
+	<string name="hint_password">Password</string>
+	<string name="hint_password_confirm">Confirm password</string>
+	<string name="action_login">Sign in</string>
+	<string name="action_register">Create account</string>
+	<string name="action_switch_to_login">Already have an account? Sign in</string>
+	<string name="action_switch_to_register">No account? Create one</string>
+
+	<string name="error_username_required">Username is required</string>
+	<string name="error_password_required">Password is required</string>
+	<string name="error_password_too_short">Password must be at least 6 characters</string>
+	<string name="error_password_mismatch">Passwords do not match</string>
+	<string name="auth_in_progress">Authenticating…</string>
+	<string name="auth_success_login">Signed in</string>
+	<string name="auth_success_register">Account created</string>
+	<string name="auth_failed_login">Invalid username or password</string>
+	<string name="auth_failed_register">Username already taken</string>
+	<string name="auth_error_network">Network error: %1$s</string>
+	<string name="auth_error_generic">Authentication failed</string>
 </resources>
