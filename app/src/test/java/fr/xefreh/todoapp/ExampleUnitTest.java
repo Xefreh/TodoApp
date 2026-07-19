@@ -1,11 +1,11 @@
 package fr.xefreh.todoapp;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
- * Example local unit test, which will execute on the development machine (host).
+ * Exemple de test unitaire local (JVM host) exécuté sur la plateforme JUnit 5 (Jupiter).
  *
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
