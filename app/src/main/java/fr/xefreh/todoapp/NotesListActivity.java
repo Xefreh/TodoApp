@@ -67,8 +67,30 @@ public class NotesListActivity extends AppCompatActivity {
 		viewModel.getNotes().observe(this, notes -> setNotesAdapter(notes, screen));
 
 		screen.syncButton.setOnClickListener((v -> {
-			// TODO: branché sur l'API REST dans un commit ultérieur.
-			Toast.makeText(NotesListActivity.this, "Sync bientôt disponible", Toast.LENGTH_SHORT).show();
+			screen.syncButton.setEnabled(false);
+			executorService.execute(() -> {
+				fr.xefreh.todoapp.data.NotesRepository repo =
+						new fr.xefreh.todoapp.data.NotesRepositoryImpl(
+								RetrofitProvider.getApi(),
+								appDatabase.noteDao(),
+								new fr.xefreh.todoapp.data.SessionManager(this));
+				try {
+					java.util.List<Note> synced = repo.fetchAll();
+					runOnUiThread(() -> {
+						screen.syncButton.setEnabled(true);
+						Toast.makeText(NotesListActivity.this,
+								"Synced " + synced.size() + " notes",
+								Toast.LENGTH_SHORT).show();
+					});
+				} catch (fr.xefreh.todoapp.data.ApiException e) {
+					runOnUiThread(() -> {
+						screen.syncButton.setEnabled(true);
+						Toast.makeText(NotesListActivity.this,
+								"Sync failed: " + e.getMessage(),
+								Toast.LENGTH_LONG).show();
+					});
+				}
+			});
 		}));
 	}
 
