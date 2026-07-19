@@ -12,12 +12,25 @@ import java.util.List;
 @Dao
 public interface NoteDao {
 
-	@Insert(onConflict = OnConflictStrategy.REPLACE)
-	void insert(Note note);
+    /** Insère ou remplace une note (clé = id serveur). */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insert(Note note);
 
-	@Query("SELECT * FROM notes ORDER BY createdAt DESC")
-	LiveData<List<Note>> getAllLive();
+    @Query("SELECT * FROM notes ORDER BY createdAt DESC")
+    LiveData<List<Note>> getAllLive();
 
-	@Delete
-	void delete(Note note);
+    /** Liste synchrone (hors thread principal) pour les opérations de synchronisation. */
+    @Query("SELECT * FROM notes ORDER BY createdAt DESC")
+    List<Note> getAll();
+
+    @Delete
+    void delete(Note note);
+
+    /** Supprime une note par son id serveur. */
+    @Query("DELETE FROM notes WHERE id = :id")
+    void deleteById(long id);
+
+    /** Vide le cache local (avant un rechargement complet depuis le serveur). */
+    @Query("DELETE FROM notes")
+    void clear();
 }
