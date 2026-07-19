@@ -73,7 +73,16 @@ public class NotesRepositoryImpl implements NotesRepository {
     @Override
     public void delete(long serverId) {
         String auth = requireAuthHeader();
-        execute(api.deleteNote(auth, serverId));
+        // DELETE renvoie un corps vide (204) : on vérifie juste le succès HTTP.
+        Response<Void> response;
+        try {
+            response = api.deleteNote(auth, serverId).execute();
+        } catch (IOException e) {
+            throw new ApiException("Network error: " + e.getMessage(), -1, e);
+        }
+        if (!response.isSuccessful()) {
+            throw new ApiException("HTTP " + response.code(), response.code());
+        }
         noteDao.deleteById(serverId);
     }
 
