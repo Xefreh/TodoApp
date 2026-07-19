@@ -14,6 +14,13 @@ material = "1.10.0"
 activityKtx = "1.8.0"
 constraintlayout = "2.1.4"
 roomRuntime = "2.8.4"
+javalin = "7.2.1"
+hibernateCore = "6.6.18.Final"
+jakartaPersistence = "3.2.0"
+h2 = "2.3.232"
+jjwt = "0.12.6"
+argon2 = "2.12"
+slf4jSimple = "2.0.17"
 
 [libraries]
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
@@ -34,6 +41,15 @@ constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayo
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "converterGson" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
+javalin-bundle = { group = "io.javalin", name = "javalin-bundle", version.ref = "javalin" }
+hibernate-core = { group = "org.hibernate.orm", name = "hibernate-core", version.ref = "hibernateCore" }
+jakarta-persistence-api = { group = "jakarta.persistence", name = "jakarta.persistence-api", version.ref = "jakartaPersistence" }
+h2 = { group = "com.h2database", name = "h2", version.ref = "h2" }
+jjwt-api = { group = "io.jsonwebtoken", name = "jjwt-api", version.ref = "jjwt" }
+jjwt-impl = { group = "io.jsonwebtoken", name = "jjwt-impl", version.ref = "jjwt" }
+jjwt-jackson = { group = "io.jsonwebtoken", name = "jjwt-jackson", version.ref = "jjwt" }
+argon2-jvm = { group = "de.mkammerer", name = "argon2-jvm", version.ref = "argon2" }
+slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4jSimple" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -1,0 +1,39 @@
+plugins {
+    id 'application'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+application {
+    mainClass = 'fr.xefreh.todoapp.backend.Main'
+}
+
+dependencies {
+    implementation libs.javalin.bundle
+    implementation libs.hibernate.core
+    implementation libs.jakarta.persistence.api
+    implementation libs.h2
+    implementation libs.jjwt.api
+    runtimeOnly libs.jjwt.impl
+    runtimeOnly libs.jjwt.jackson
+    implementation libs.argon2.jvm
+    implementation libs.slf4j.simple
+
+    testImplementation libs.junit.jupiter
+    testImplementation libs.mockito.core
+    testImplementation libs.mockito.junit.jupiter
+    testRuntimeOnly libs.junit.platform.launcher
+}
+
+test {
+    useJUnitPlatform()
+}
+
+// Démarrage du serveur en mode développement depuis la racine : ./gradlew :backend:run
+run {
+    standardInput = System.in
+}
