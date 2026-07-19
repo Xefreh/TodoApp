@@ -2,18 +2,22 @@ package fr.xefreh.todoapp.backend.security;
 
 import fr.xefreh.todoapp.backend.service.InvalidTokenException;
 import fr.xefreh.todoapp.backend.service.TokenService;
-import io.javalin.http.Context;
 import io.javalin.http.Handler;
+import io.javalin.http.UnauthorizedResponse;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Pré-filtre d'authentification. À enregistrer via {@code before("/api/notes/*", new AuthFilter(...))}.
+ * Pré-filtre d'authentification. À enregistrer via {@code before("/api/notes", ...)} et
+ * {@code before("/api/notes/*", ...)}.
  *
- * Extrait le jeton de l'en-tête {@code Authorization: Bearer <token>}, le vérifie via le
+ * <p>Extrait le jeton de l'en-tête {@code Authorization: Bearer <token>}, le vérifie via le
  * {@link TokenService}, et expose l'identifiant utilisateur au reste de la requête via
- * {@link Context#attribute(String, Object)} sous la clé {@link #USER_ID_KEY}.
+ * {@link io.javalin.http.Context#attribute(String, Object)} sous la clé
+ * {@link #USER_ID_KEY}.</p>
  *
- * Si le jeton est absent ou invalide, répond 401 et stoppe la requête.
+ * <p>En cas d'échec, lève une {@link UnauthorizedResponse} — Javalin interrompt la chaîne
+ * et renvoie 401 automatiquement (le handler {@code HttpResponseException} défini dans
+ * {@code Main} produit le corps JSON standard).</p>
  */
 public class AuthFilter implements Handler {
 
@@ -30,22 +34,20 @@ public class AuthFilter implements Handler {
     }
 
     @Override
-    public void handle(@NotNull Context ctx) {
+    public void handle(@NotNull io.javalin.http.Context ctx) {
         String header = ctx.header(AUTH_HEADER);
-        if (header == null || !header.startsWith(BEARER_PREFIX)) {
-            ctx.status(401).json(new ErrorBody("UNAUTHORIZED", "Missing or invalid Authorization header"));
-            return;
+        String token = null;
+        if (header != null && header.startsWith(BEARER_PREFIX)) {
+            token = header.substring(BEARER_PREFIX.length()).trim();
         }
-        String token = header.substring(BEARER_PREFIX.length()).trim();
+        if (token == null || token.isEmpty()) {
+            throw new UnauthorizedResponse("Missing or invalid Authorization header");
+        }
         try {
             long userId = tokenService.verify(token);
             ctx.attribute(USER_ID_KEY, userId);
         } catch (InvalidTokenException e) {
-            ctx.status(401).json(new ErrorBody("UNAUTHORIZED", e.getMessage()));
+            throw new UnauthorizedResponse(e.getMessage());
         }
-    }
-
-    /** Corps d'erreur JSON standard pour les réponses 401. */
-    public record ErrorBody(String error, String message) {
     }
 }

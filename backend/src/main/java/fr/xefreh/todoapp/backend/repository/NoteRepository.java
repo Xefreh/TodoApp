@@ -17,7 +17,14 @@ public interface NoteRepository {
     /** Une note précise si elle appartient au propriétaire, sinon vide. */
     Optional<NoteEntity> findByIdAndOwner(Long id, Long ownerId);
 
-    /** Persiste (crée ou met à jour) une note. */
+    /**
+     * Crée une note appartenant à l'utilisateur {@code ownerId}. Les champs de {@code note}
+     * (title, body, imageUri, createdAt) sont recopiés ; le owner est résolu dans la même
+     * transaction. L'id de {@code note} est ignoré (auto-généré).
+     */
+    NoteEntity create(NoteEntity note, Long ownerId);
+
+    /** Met à jour une note existante (le owner et l'id de {@code note} doivent être positionnés). */
     NoteEntity save(NoteEntity note);
 
     /** Supprime une note par son identifiant si elle appartient au propriétaire. Renvoie vrai si supprimée. */

@@ -2,12 +2,15 @@ package fr.xefreh.todoapp.backend;
 
 import fr.xefreh.todoapp.backend.config.JpaConfig;
 import fr.xefreh.todoapp.backend.controller.AuthController;
+import fr.xefreh.todoapp.backend.controller.NoteController;
+import fr.xefreh.todoapp.backend.repository.JpaNoteRepository;
 import fr.xefreh.todoapp.backend.repository.JpaUserRepository;
 import fr.xefreh.todoapp.backend.security.AuthFilter;
 import fr.xefreh.todoapp.backend.service.Argon2PasswordHasher;
 import fr.xefreh.todoapp.backend.service.AuthException;
 import fr.xefreh.todoapp.backend.service.AuthServiceImpl;
 import fr.xefreh.todoapp.backend.service.JwtTokenService;
+import fr.xefreh.todoapp.backend.service.NoteServiceImpl;
 import fr.xefreh.todoapp.backend.service.PasswordHasher;
 import fr.xefreh.todoapp.backend.service.TokenService;
 import io.javalin.Javalin;
@@ -40,6 +43,9 @@ public final class Main {
                 new JpaUserRepository(), passwordHasher, tokenService);
         AuthController authController = new AuthController(authService);
 
+        NoteServiceImpl noteService = new NoteServiceImpl(new JpaNoteRepository());
+        NoteController noteController = new NoteController(noteService);
+
         Javalin.create(config -> {
             // CORS permissif en développement (tests curl/browser depuis le host).
             config.bundledPlugins.enableCors(cors -> cors.addRule(rule -> rule.anyHost()));
@@ -52,12 +58,25 @@ public final class Main {
             config.routes.post("/api/auth/login", authController.Login);
 
             // Routes protégées : le filtre valide le Bearer JWT et expose le userId.
-            config.routes.before("/api/notes/*", new AuthFilter(tokenService));
+            // Deux patterns car "/api/notes/*" ne couvre pas l'exact "/api/notes".
+            AuthFilter authFilter = new AuthFilter(tokenService);
+            config.routes.before("/api/notes", authFilter);
+            config.routes.before("/api/notes/*", authFilter);
+            config.routes.get("/api/notes", noteController.ListNotes);
+            config.routes.post("/api/notes", noteController.CreateNote);
+            config.routes.get("/api/notes/{id}", noteController.GetNote);
+            config.routes.put("/api/notes/{id}", noteController.UpdateNote);
+            config.routes.delete("/api/notes/{id}", noteController.DeleteNote);
 
             // Gestion d'erreurs uniforme.
             config.routes.exception(AuthException.class, (e, ctx) -> {
                 ctx.status(400);
                 ctx.json(new ErrorResponse("AUTH_ERROR", e.getMessage()));
+            });
+            // HttpResponseException (UnauthorizedResponse, etc.) : respecte le statut porté.
+            config.routes.exception(io.javalin.http.HttpResponseException.class, (e, ctx) -> {
+                ctx.status(e.getStatus());
+                ctx.json(new ErrorResponse(httpErrorName(e.getStatus()), e.getMessage()));
             });
             config.routes.exception(Exception.class, (e, ctx) -> {
                 ctx.status(500);
@@ -76,5 +95,18 @@ public final class Main {
 
     /** Corps d'erreur JSON standard. */
     public record ErrorResponse(String error, String message) {
+    }
+
+    /** Nom symbolique du code d'erreur à partir du statut HTTP (401 -> UNAUTHORIZED, …). */
+    private static String httpErrorName(int status) {
+        return switch (status) {
+            case 400 -> "BAD_REQUEST";
+            case 401 -> "UNAUTHORIZED";
+            case 403 -> "FORBIDDEN";
+            case 404 -> "NOT_FOUND";
+            case 409 -> "CONFLICT";
+            case 422 -> "UNPROCESSABLE";
+            default -> "HTTP_" + status;
+        };
     }
 }

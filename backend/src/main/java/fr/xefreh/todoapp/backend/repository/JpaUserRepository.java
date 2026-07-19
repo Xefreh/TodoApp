@@ -29,6 +29,16 @@ public class JpaUserRepository implements UserRepository {
     }
 
     @Override
+    public UserEntity getReference(Long id) {
+        EntityManager em = JpaConfig.entityManagerFactory().createEntityManager();
+        try {
+            return em.getReference(UserEntity.class, id);
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
     public UserEntity save(UserEntity user) {
         EntityManager em = JpaConfig.entityManagerFactory().createEntityManager();
         em.getTransaction().begin();

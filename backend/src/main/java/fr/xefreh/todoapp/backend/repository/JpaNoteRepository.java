@@ -2,6 +2,7 @@ package fr.xefreh.todoapp.backend.repository;
 
 import fr.xefreh.todoapp.backend.config.JpaConfig;
 import fr.xefreh.todoapp.backend.model.NoteEntity;
+import fr.xefreh.todoapp.backend.model.UserEntity;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +39,28 @@ public class JpaNoteRepository implements NoteRepository {
                     .setParameter("ownerId", ownerId)
                     .getResultStream()
                     .findFirst();
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public NoteEntity create(NoteEntity note, Long ownerId) {
+        EntityManager em = JpaConfig.entityManagerFactory().createEntityManager();
+        em.getTransaction().begin();
+        try {
+            // Résout la référence propriétaire dans la même transaction : getReference ne fait
+            // pas de select mais valide l'existence de la FK au flush/commit.
+            UserEntity owner = em.getReference(UserEntity.class, ownerId);
+            note.setOwner(owner);
+            em.persist(note);
+            em.getTransaction().commit();
+            return note;
+        } catch (RuntimeException e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
         } finally {
             em.close();
         }
