@@ -2,7 +2,6 @@ package fr.xefreh.todoapp;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.Toast;
 
@@ -21,9 +20,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import fr.xefreh.todoapp.ui.NotesListScreen;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class NotesListActivity extends AppCompatActivity {
 
@@ -71,25 +67,8 @@ public class NotesListActivity extends AppCompatActivity {
 		viewModel.getNotes().observe(this, notes -> setNotesAdapter(notes, screen));
 
 		screen.syncButton.setOnClickListener((v -> {
-			JsonPlaceholderApi retrofitApi = RetrofitProvider.getApi();
-			retrofitApi.getPosts().enqueue(new Callback<>() {
-				@Override
-				public void onResponse(@NonNull Call<List<PostResponse>> call, @NonNull Response<List<PostResponse>> response) {
-					List<PostResponse> posts = response.body();
-
-					if (posts == null || posts.isEmpty()) {
-						Toast.makeText(NotesListActivity.this, "No posts to sync", Toast.LENGTH_SHORT).show();
-						return;
-					}
-
-					executorService.execute(() -> posts.forEach((p) -> appDatabase.noteDao().insert(new Note(p.getId(), p.getTitle(), p.getBody()))));
-				}
-
-				@Override
-				public void onFailure(@NonNull Call<List<PostResponse>> call, @NonNull Throwable t) {
-					Log.e("NotesListActivity", "Fetch failed", t);
-				}
-			});
+			// TODO: branché sur l'API REST dans un commit ultérieur.
+			Toast.makeText(NotesListActivity.this, "Sync bientôt disponible", Toast.LENGTH_SHORT).show();
 		}));
 	}
 
