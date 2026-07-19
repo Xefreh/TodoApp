@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
 	private SwipeNavigationDetector swipeNavigationDetector;
 	private boolean isOpeningNotes;
 	private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+	private fr.xefreh.todoapp.data.NotesRepository notesRepository;
 
 	private final ActivityResultLauncher<Uri> takePhotoLauncher = registerForActivityResult(new ActivityResultContracts.TakePicture(), wasSaved -> {
 		if (wasSaved) {
@@ -83,6 +84,12 @@ public class MainActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		EdgeToEdge.enable(this);
+
+		AppDatabase appDatabase = DatabaseProvider.getDatabase(this);
+		notesRepository = new fr.xefreh.todoapp.data.NotesRepositoryImpl(
+				RetrofitProvider.getApi(),
+				appDatabase.noteDao(),
+				new fr.xefreh.todoapp.data.SessionManager(this));
 
 		screen = new MainScreen(this);
 		setContentView(screen.root);
@@ -133,15 +140,25 @@ public class MainActivity extends AppCompatActivity {
 				return;
 			}
 
-			AppDatabase appDatabase = DatabaseProvider.getDatabase(this);
+			screen.saveButton.setEnabled(false);
 			// Read photoUri inside the task: the single-threaded executor guarantees a
 			// pending gallery-image copy submitted earlier has finished by then.
 			executorService.execute(() -> {
 				String imageUri = photoUri != null ? photoUri.toString() : null;
-				appDatabase.noteDao().insert(new Note(title, body, imageUri));
-
-				Intent intent = new Intent(MainActivity.this, NotesListActivity.class);
-				startActivity(intent);
+				try {
+					notesRepository.create(title, body, imageUri);
+					runOnUiThread(() -> {
+						screen.saveButton.setEnabled(true);
+						startActivity(new Intent(MainActivity.this, NotesListActivity.class));
+					});
+				} catch (fr.xefreh.todoapp.data.ApiException e) {
+					runOnUiThread(() -> {
+						screen.saveButton.setEnabled(true);
+						Toast.makeText(MainActivity.this,
+								"Save failed: " + e.getMessage(),
+								Toast.LENGTH_LONG).show();
+					});
+				}
 			});
 		});
 
