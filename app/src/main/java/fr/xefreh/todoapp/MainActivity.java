@@ -37,7 +37,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import fr.xefreh.todoapp.data.ApiException;
 import fr.xefreh.todoapp.data.NotesRepository;
 import fr.xefreh.todoapp.data.NotesRepositoryImpl;
 import fr.xefreh.todoapp.data.SessionManager;
@@ -153,7 +152,9 @@ public class MainActivity extends AppCompatActivity {
 						screen.saveButton.setEnabled(true);
 						startActivity(new Intent(MainActivity.this, NotesListActivity.class));
 					});
-				} catch (ApiException e) {
+				} catch (Exception e) {
+					// Catch-all: the save button must always be re-enabled, whatever the
+					// failure (ApiException, but also any unexpected RuntimeException).
 					runOnUiThread(() -> {
 						screen.saveButton.setEnabled(true);
 						Toast.makeText(MainActivity.this,
