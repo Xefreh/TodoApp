@@ -26,6 +26,9 @@ public class Argon2PasswordHasher implements PasswordHasher {
 
     private final Argon2 argon2 = Argon2Factory.create(Argon2Types.ARGON2id, SALT_LENGTH, HASH_LENGTH);
 
+    /** Lazily computed (one argon2 hash costs ~50-100 ms, only pay it on first use). */
+    private volatile String dummyHash;
+
     @Override
     public String hash(String plainPassword) {
         return argon2.hash(ITERATIONS, MEMORY_KIB, PARALLELISM, plainPassword.toCharArray());
@@ -34,6 +37,21 @@ public class Argon2PasswordHasher implements PasswordHasher {
     @Override
     public boolean verify(String plainPassword, String hashedPassword) {
         return argon2.verify(hashedPassword, plainPassword.toCharArray());
+    }
+
+    @Override
+    public String dummyHash() {
+        String local = dummyHash;
+        if (local == null) {
+            synchronized (this) {
+                local = dummyHash;
+                if (local == null) {
+                    local = hash("dummy-password-for-constant-time-login");
+                    dummyHash = local;
+                }
+            }
+        }
+        return local;
     }
 
     /** Argon2 type constant, named explicitly for readability. */

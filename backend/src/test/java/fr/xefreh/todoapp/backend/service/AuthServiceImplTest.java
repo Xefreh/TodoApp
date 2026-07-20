@@ -99,10 +99,13 @@ class AuthServiceImplTest {
     @Test
     void login_failsWhenUserUnknown() {
         when(userRepository.findByUsername("nobody")).thenReturn(null);
+        when(passwordHasher.dummyHash()).thenReturn("dummy-hash");
+        when(passwordHasher.verify("x", "dummy-hash")).thenReturn(false);
 
         assertThrows(InvalidCredentialsException.class, () -> authService.login("nobody", "x"));
 
-        verify(passwordHasher, never()).verify(anyString(), anyString());
+        // A full verification still runs against the dummy hash (constant-time login).
+        verify(passwordHasher).verify("x", "dummy-hash");
         verify(tokenService, never()).issueFor(org.mockito.ArgumentMatchers.anyLong());
     }
 

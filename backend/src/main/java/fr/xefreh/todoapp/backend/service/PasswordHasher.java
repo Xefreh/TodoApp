@@ -11,4 +11,11 @@ public interface PasswordHasher {
 
     /** Verifies that a plain-text password matches a previously computed hash. */
     boolean verify(String plainPassword, String hashedPassword);
+
+    /**
+     * A valid but meaningless hash, used to run a full verification when the login username
+     * does not exist: keeps the response time constant and avoids leaking whether the
+     * account exists (user enumeration via timing).
+     */
+    String dummyHash();
 }

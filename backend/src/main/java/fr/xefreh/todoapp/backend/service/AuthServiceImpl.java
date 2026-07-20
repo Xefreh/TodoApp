@@ -55,7 +55,13 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResult login(String username, String password) {
         UserEntity user = userRepository.findByUsername(username);
-        if (user == null || !passwordHasher.verify(password, user.getPasswordHash())) {
+        // Constant-time behavior: run a full argon2 verification even when the user does
+        // not exist, so the response time does not reveal whether the account exists.
+        // Beware: the verification must be evaluated BEFORE checking user == null —
+        // "user == null || !verify(...)" would short-circuit and defeat the dummy hash.
+        String hash = user != null ? user.getPasswordHash() : passwordHasher.dummyHash();
+        boolean passwordMatches = passwordHasher.verify(password, hash);
+        if (user == null || !passwordMatches) {
             throw new InvalidCredentialsException();
         }
         String token = tokenService.issueFor(user.getId());
