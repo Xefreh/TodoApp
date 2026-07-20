@@ -10,7 +10,6 @@ import static org.mockito.Mockito.when;
 
 import fr.xefreh.todoapp.backend.model.UserEntity;
 import fr.xefreh.todoapp.backend.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -33,11 +32,6 @@ class AuthServiceImplTest {
 
     @InjectMocks
     private AuthServiceImpl authService;
-
-    @BeforeEach
-    void resetMocks() {
-        // Stubs are declared per test to stay explicit.
-    }
 
     @Test
     void register_persistsHashedUserAndReturnsToken() {
