@@ -1,6 +1,7 @@
 package fr.xefreh.todoapp.ui;
 
 import android.content.Context;
+import android.text.InputFilter;
 import android.text.InputType;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,9 @@ import fr.xefreh.todoapp.R;
  * listeners to them.</p>
  */
 public final class AuthScreen {
+
+    /** Username column limit enforced by the backend — fail early on the client. */
+    private static final int USERNAME_MAX_LENGTH = 255;
 
     /** Screen display mode. */
     public enum Mode { LOGIN, REGISTER }
@@ -69,6 +73,7 @@ public final class AuthScreen {
         usernameLayout.setHint(R.string.hint_username);
         usernameInput = new TextInputEditText(usernameLayout.getContext());
         usernameInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        usernameInput.setFilters(new InputFilter[]{new InputFilter.LengthFilter(USERNAME_MAX_LENGTH)});
         usernameLayout.addView(usernameInput, matchWidthWrapHeight());
         LinearLayout.LayoutParams usernameParams = matchWidthWrapHeight();
         content.addView(usernameLayout, usernameParams);
