@@ -5,16 +5,16 @@ import de.mkammerer.argon2.Argon2Factory;
 import de.mkammerer.argon2.Argon2Helper;
 
 /**
- * Implémentation de {@link PasswordHasher} basée sur argon2id.
+ * {@link PasswordHasher} implementation based on argon2id.
  *
- * Paramètres (recommandations OWASP 2024) :
+ * Parameters (OWASP 2024 recommendations):
  * <ul>
- *   <li>itérations = 2</li>
- *   <li>mémoire = 19 MiB</li>
- *   <li>parallélisme = 1</li>
+ *   <li>iterations = 2</li>
+ *   <li>memory = 19 MiB</li>
+ *   <li>parallelism = 1</li>
  * </ul>
- * {@link Argon2Helper} détermine le nombre d'itérations atteignable avec le budget mémoire
- * et temps fixé ; on retombe sur 2 par défaut.
+ * {@link Argon2Helper} determines the number of iterations reachable within the fixed memory
+ * and time budget; it falls back to 2 by default.
  */
 public class Argon2PasswordHasher implements PasswordHasher {
 
@@ -36,7 +36,7 @@ public class Argon2PasswordHasher implements PasswordHasher {
         return argon2.verify(hashedPassword, plainPassword.toCharArray());
     }
 
-    /** Constante de type Argon2, nommée explicitement pour la lisibilité. */
+    /** Argon2 type constant, named explicitly for readability. */
     private static final class Argon2Types {
         static final Argon2Factory.Argon2Types ARGON2id = Argon2Factory.Argon2Types.ARGON2id;
     }

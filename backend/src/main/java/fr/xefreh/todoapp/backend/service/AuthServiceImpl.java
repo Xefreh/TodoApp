@@ -4,10 +4,10 @@ import fr.xefreh.todoapp.backend.model.UserEntity;
 import fr.xefreh.todoapp.backend.repository.UserRepository;
 
 /**
- * Implémentation de {@link AuthService} construite par injection de dépendances.
+ * {@link AuthService} implementation built via dependency injection.
  *
- * Toutes les dépendances sont des interfaces : la classe est donc entièrement testable
- * avec des mocks Mockito (cf. AuthServiceTest).
+ * All dependencies are interfaces: the class is therefore fully testable with Mockito
+ * mocks (see AuthServiceTest).
  */
 public class AuthServiceImpl implements AuthService {
 

@@ -14,16 +14,15 @@ import retrofit2.http.PUT;
 import retrofit2.http.Path;
 
 /**
- * Interface du client REST (Retrofit) vers le backend Javalin.
+ * REST client interface (Retrofit) for the Javalin backend.
  *
- * <p>Les routes sous {@code /notes} requièrent un en-tête {@code Authorization: Bearer <token>}.
- * Celui-ci est normalement injecté automatiquement par {@code AuthInterceptor} (OkHttp), mais
- * les méthodes l'acceptent aussi explicitement en paramètre pour permettre les tests sans
- * intercepteur.</p>
+ * <p>Routes under {@code /notes} require an {@code Authorization: Bearer <token>} header.
+ * It is normally injected automatically by {@code AuthInterceptor} (OkHttp), but the methods
+ * also accept it explicitly as a parameter to allow testing without an interceptor.</p>
  */
 public interface TodoApi {
 
-    // --- Authentification (publique) ---
+    // --- Authentication (public) ---
 
     @POST("auth/register")
     Call<AuthResponse> register(@Body Credentials credentials);
@@ -31,7 +30,7 @@ public interface TodoApi {
     @POST("auth/login")
     Call<AuthResponse> login(@Body Credentials credentials);
 
-    // --- Notes (authentifiées) ---
+    // --- Notes (authenticated) ---
 
     @GET("notes")
     Call<List<NoteDto>> getNotes(@Header("Authorization") String authHeader);

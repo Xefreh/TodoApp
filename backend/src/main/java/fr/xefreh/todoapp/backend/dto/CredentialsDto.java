@@ -1,7 +1,7 @@
 package fr.xefreh.todoapp.backend.dto;
 
 /**
- * Corps de requête pour {@code POST /api/auth/register} et {@code POST /api/auth/login}.
+ * Request body for {@code POST /api/auth/register} and {@code POST /api/auth/login}.
  */
 public class CredentialsDto {
     public String username;

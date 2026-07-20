@@ -1,10 +1,10 @@
 package fr.xefreh.todoapp.data.dto;
 
 /**
- * Représentation d'une note échangée avec l'API REST.
+ * Representation of a note exchanged with the REST API.
  *
- * <p>En création (POST), seuls {@code title}, {@code body}, {@code imageUri} sont envoyés ;
- * en réponse, tous les champs sont renseignés par le serveur ({@code id}, {@code createdAt}).</p>
+ * <p>On creation (POST), only {@code title}, {@code body}, {@code imageUri} are sent;
+ * in the response, all fields are populated by the server ({@code id}, {@code createdAt}).</p>
  */
 public class NoteDto {
     public Long id;

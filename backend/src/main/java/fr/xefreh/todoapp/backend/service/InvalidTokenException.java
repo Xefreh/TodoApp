@@ -1,8 +1,8 @@
 package fr.xefreh.todoapp.backend.service;
 
 /**
- * Levée quand un jeton JWT est absent, malformé, expiré ou invalide. Le filtre
- * d'authentification la traduit en HTTP 401.
+ * Thrown when a JWT token is missing, malformed, expired or invalid. The authentication
+ * filter translates it into HTTP 401.
  */
 public class InvalidTokenException extends AuthException {
     public InvalidTokenException(String message) {

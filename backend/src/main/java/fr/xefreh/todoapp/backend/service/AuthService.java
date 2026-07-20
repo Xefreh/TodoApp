@@ -1,23 +1,23 @@
 package fr.xefreh.todoapp.backend.service;
 
 /**
- * Logique d'inscription et de connexion. Interface isolée de l'implémentation
- * ({@link AuthServiceImpl}) afin d'être testée avec des dépendances mockées
+ * Registration and login logic. Interface kept separate from the implementation
+ * ({@link AuthServiceImpl}) so it can be tested with mocked dependencies
  * (UserRepository, PasswordHasher, TokenService).
  */
 public interface AuthService {
 
     /**
-     * Crée un nouvel utilisateur.
+     * Creates a new user.
      *
-     * @throws UsernameTakenException si le nom d'utilisateur existe déjà
+     * @throws UsernameTakenException if the username already exists
      */
     AuthResult register(String username, String password);
 
     /**
-     * Authentifie un utilisateur existant.
+     * Authenticates an existing user.
      *
-     * @throws InvalidCredentialsException si le nom est inconnu ou le mot de passe incorrect
+     * @throws InvalidCredentialsException if the name is unknown or the password is incorrect
      */
     AuthResult login(String username, String password);
 }

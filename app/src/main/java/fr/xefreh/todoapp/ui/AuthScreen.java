@@ -16,15 +16,15 @@ import com.google.android.material.textfield.TextInputLayout;
 import fr.xefreh.todoapp.R;
 
 /**
- * Écran d'authentification programmatique (sans XML), gérant à la fois la connexion et
- * l'inscription via un mode {@link Mode}. Cohérent avec les autres écrans (*Screen) du projet.
+ * Programmatic authentication screen (no XML), handling both sign-in and registration via
+ * a {@link Mode}. Consistent with the project's other screens (*Screen).
  *
- * <p>Les champs et boutons sont exposés en champs publics pour que {@code LoginActivity}
- * puisse y câbler les listeners.</p>
+ * <p>Fields and buttons are exposed as public fields so {@code LoginActivity} can wire
+ * listeners to them.</p>
  */
 public final class AuthScreen {
 
-    /** Mode d'affichage de l'écran. */
+    /** Screen display mode. */
     public enum Mode { LOGIN, REGISTER }
 
     public final LinearLayout root;
@@ -35,7 +35,7 @@ public final class AuthScreen {
     public final TextInputLayout passwordLayout;
     public final TextInputEditText passwordInput;
 
-    /** Champ de confirmation de mot de passe — visible uniquement en mode REGISTER. */
+    /** Password confirmation field — visible only in REGISTER mode. */
     public final TextInputLayout passwordConfirmLayout;
     public final TextInputEditText passwordConfirmInput;
 
@@ -51,7 +51,7 @@ public final class AuthScreen {
         int padding = ViewUtils.dp(context, 16);
         root.setPadding(padding, padding, padding, padding);
 
-        // Centre verticalement le contenu dans la fenêtre.
+        // Vertically centers the content within the window.
         NestedScrollView scroll = new NestedScrollView(context);
         scroll.setFillViewport(true);
         LinearLayout content = new LinearLayout(context);
@@ -112,7 +112,7 @@ public final class AuthScreen {
         applyMode(Mode.LOGIN);
     }
 
-    /** Bascule entre connexion et inscription et rafraîchit libellés / visibilité des champs. */
+    /** Toggles between sign-in and registration and refreshes labels / field visibility. */
     public void applyMode(Mode mode) {
         this.mode = mode;
         boolean register = mode == Mode.REGISTER;

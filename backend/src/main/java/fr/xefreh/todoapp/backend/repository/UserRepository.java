@@ -3,17 +3,17 @@ package fr.xefreh.todoapp.backend.repository;
 import fr.xefreh.todoapp.backend.model.UserEntity;
 
 /**
- * Accès aux utilisateurs. Interface volontairement isolée de l'implémentation JPA
- * afin d'être mockable dans les tests unitaires du service.
+ * Access to users. Interface intentionally kept separate from the JPA implementation
+ * so it can be mocked in the service unit tests.
  */
 public interface UserRepository {
 
-    /** Trouve un utilisateur par son nom, ou {@code null} s'il n'existe pas. */
+    /** Finds a user by name, or {@code null} if it does not exist. */
     UserEntity findByUsername(String username);
 
-    /** Renvoie une référence proxy sur l'utilisateur d'identifiant donné (sans select complet). */
+    /** Returns a proxy reference to the user with the given id (without a full select). */
     UserEntity getReference(Long id);
 
-    /** Persiste (crée ou met à jour) un utilisateur. */
+    /** Persists (creates or updates) a user. */
     UserEntity save(UserEntity user);
 }

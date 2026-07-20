@@ -4,11 +4,10 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 
 /**
- * Factory singleton de l'{@link EntityManagerFactory} JPA (unité de persistance {@code todobackend}).
+ * Singleton factory for the JPA {@link EntityManagerFactory} (persistence unit {@code todobackend}).
  *
- * Centralise la création de l'EMF pour que les repositories puissent tous partager la même
- * instance. L'unité de persistance et la base H2 sont configurées dans
- * {@code META-INF/persistence.xml}.
+ * Centralizes creation of the EMF so that repositories can all share the same instance.
+ * The persistence unit and the H2 database are configured in {@code META-INF/persistence.xml}.
  */
 public final class JpaConfig {
 
@@ -31,7 +30,7 @@ public final class JpaConfig {
         return local;
     }
 
-    /** Ferme l'EMF — à appeler à l'arrêt du serveur. */
+    /** Closes the EMF — call on server shutdown. */
     public static void shutdown() {
         if (emf != null && emf.isOpen()) {
             emf.close();

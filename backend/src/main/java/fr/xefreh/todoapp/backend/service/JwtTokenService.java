@@ -10,13 +10,13 @@ import java.util.Date;
 import javax.crypto.SecretKey;
 
 /**
- * Implémentation de {@link TokenService} basée sur jjwt.
+ * {@link TokenService} implementation based on jjwt.
  *
- * La clé secrète est lue depuis la propriété système ou d'environnement {@code TODO_JWT_SECRET}.
- * En l'absence d'une clé d'au moins 32 octets, une clé de développement est dérivée fixement —
- * suffisante pour le prototype local mais à remplacer impérativement en production.
+ * The secret key is read from the system property or environment variable {@code TODO_JWT_SECRET}.
+ * If no key of at least 32 bytes is provided, a development key is derived deterministically —
+ * sufficient for the local prototype but must be replaced in production.
  *
- * Les jetons expirent après {@link #TOKEN_TTL} (24 h).
+ * Tokens expire after {@link #TOKEN_TTL} (24 h).
  */
 public class JwtTokenService implements TokenService {
 
@@ -29,7 +29,7 @@ public class JwtTokenService implements TokenService {
         this(resolveSecret());
     }
 
-    /** Constructeur de test permettant d'injecter une clé explicite. */
+    /** Test constructor allowing an explicit key to be injected. */
     public JwtTokenService(String secret) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
@@ -69,7 +69,7 @@ public class JwtTokenService implements TokenService {
             secret = System.getProperty("TODO_JWT_SECRET");
         }
         if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < 32) {
-            // Clé de développement — 32+ octets, stable au sein d'une session.
+            // Development key — 32+ bytes, stable within a session.
             return "todobackend-dev-secret-do-not-use-in-prod!!";
         }
         return secret;

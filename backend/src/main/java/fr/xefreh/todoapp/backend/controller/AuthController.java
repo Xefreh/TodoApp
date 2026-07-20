@@ -11,13 +11,13 @@ import io.javalin.http.Handler;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Endpoints d'authentification. Deux handlers à enregistrer :
+ * Authentication endpoints. Two handlers to register:
  * <ul>
- *   <li>{@link #Register} sur {@code POST /api/auth/register}</li>
- *   <li>{@link #Login} sur {@code POST /api/auth/login}</li>
+ *   <li>{@link #Register} on {@code POST /api/auth/register}</li>
+ *   <li>{@link #Login} on {@code POST /api/auth/login}</li>
  * </ul>
  *
- * Les instances sont créées en passant l'{@link AuthService} construit au bootstrap.
+ * Instances are created by passing the {@link AuthService} built at bootstrap.
  */
 public final class AuthController {
 
@@ -27,7 +27,7 @@ public final class AuthController {
         this.authService = authService;
     }
 
-    /** Handler {@code POST /api/auth/register}. */
+    /** Handler for {@code POST /api/auth/register}. */
     public final Handler Register = new Handler() {
         @Override
         public void handle(@NotNull Context ctx) {
@@ -41,7 +41,7 @@ public final class AuthController {
         }
     };
 
-    /** Handler {@code POST /api/auth/login}. */
+    /** Handler for {@code POST /api/auth/login}. */
     public final Handler Login = new Handler() {
         @Override
         public void handle(@NotNull Context ctx) {
@@ -69,7 +69,7 @@ public final class AuthController {
         return new AuthResponseDto(result.token(), result.userId());
     }
 
-    /** Corps d'erreur JSON standard. */
+    /** Standard JSON error body. */
     public record ErrorBody(String error, String message) {
     }
 }

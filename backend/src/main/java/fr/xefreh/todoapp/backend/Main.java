@@ -16,27 +16,26 @@ import fr.xefreh.todoapp.backend.service.TokenService;
 import io.javalin.Javalin;
 
 /**
- * Point d'entrée du serveur REST Javalin.
+ * Entry point of the Javalin REST server.
  *
- * Bootstrap la persistance (Hibernate + H2) et l'authentification (JWT + argon2id).
- * Les routes CRUD notes arrivent dans le commit suivant.
+ * Bootstraps persistence (Hibernate + H2) and authentication (JWT + argon2id).
  *
- * Démarrage : {@code ./gradlew :backend:run} — écoute sur le port 7000 (toutes interfaces).
- * Depuis l'émulateur Android : {@code http://10.0.2.2:7000}.
+ * Startup: {@code ./gradlew :backend:run} — listens on port 7000 (all interfaces).
+ * From the Android emulator: {@code http://10.0.2.2:7000}.
  */
 public final class Main {
 
-    /** Port d'écoute du serveur. {@code 10.0.2.2:7000} depuis l'émulateur Android. */
+    /** Server listen port. {@code 10.0.2.2:7000} from the Android emulator. */
     public static final int PORT = 7000;
 
     private Main() {
     }
 
     public static void main(String[] args) {
-        // Initialise l'EntityManagerFactory au démarrage (crée/maj le schéma H2).
+        // Initializes the EntityManagerFactory at startup (creates/updates the H2 schema).
         JpaConfig.entityManagerFactory();
 
-        // --- Construction des services (assemblage manuel des dépendances) ---
+        // --- Service wiring (manual dependency assembly) ---
         PasswordHasher passwordHasher = new Argon2PasswordHasher();
         TokenService tokenService = new JwtTokenService();
         AuthServiceImpl authService = new AuthServiceImpl(
@@ -47,18 +46,18 @@ public final class Main {
         NoteController noteController = new NoteController(noteService);
 
         Javalin.create(config -> {
-            // CORS permissif en développement (tests curl/browser depuis le host).
+            // Permissive CORS in development (curl/browser tests from the host).
             config.bundledPlugins.enableCors(cors -> cors.addRule(rule -> rule.anyHost()));
 
-            // Sonde de connectivité.
+            // Connectivity probe.
             config.routes.get("/api/health", ctx -> ctx.json(new HealthResponse("ok")));
 
-            // Routes d'authentification (publiques).
+            // Authentication routes (public).
             config.routes.post("/api/auth/register", authController.Register);
             config.routes.post("/api/auth/login", authController.Login);
 
-            // Routes protégées : le filtre valide le Bearer JWT et expose le userId.
-            // Deux patterns car "/api/notes/*" ne couvre pas l'exact "/api/notes".
+            // Protected routes: the filter validates the Bearer JWT and exposes the userId.
+            // Two patterns because "/api/notes/*" does not cover the exact "/api/notes".
             AuthFilter authFilter = new AuthFilter(tokenService);
             config.routes.before("/api/notes", authFilter);
             config.routes.before("/api/notes/*", authFilter);
@@ -68,12 +67,12 @@ public final class Main {
             config.routes.put("/api/notes/{id}", noteController.UpdateNote);
             config.routes.delete("/api/notes/{id}", noteController.DeleteNote);
 
-            // Gestion d'erreurs uniforme.
+            // Uniform error handling.
             config.routes.exception(AuthException.class, (e, ctx) -> {
                 ctx.status(400);
                 ctx.json(new ErrorResponse("AUTH_ERROR", e.getMessage()));
             });
-            // HttpResponseException (UnauthorizedResponse, etc.) : respecte le statut porté.
+            // HttpResponseException (UnauthorizedResponse, etc.): honors the carried status.
             config.routes.exception(io.javalin.http.HttpResponseException.class, (e, ctx) -> {
                 ctx.status(e.getStatus());
                 ctx.json(new ErrorResponse(httpErrorName(e.getStatus()), e.getMessage()));
@@ -86,18 +85,18 @@ public final class Main {
 
         Runtime.getRuntime().addShutdownHook(new Thread(JpaConfig::shutdown));
 
-        System.out.println("TodoApp backend démarré sur http://0.0.0.0:" + PORT);
+        System.out.println("TodoApp backend started on http://0.0.0.0:" + PORT);
     }
 
-    /** Corps de réponse de la sonde de santé. */
+    /** Response body of the health probe. */
     public record HealthResponse(String status) {
     }
 
-    /** Corps d'erreur JSON standard. */
+    /** Standard JSON error body. */
     public record ErrorResponse(String error, String message) {
     }
 
-    /** Nom symbolique du code d'erreur à partir du statut HTTP (401 -> UNAUTHORIZED, …). */
+    /** Symbolic error name derived from the HTTP status (401 -> UNAUTHORIZED, ...). */
     private static String httpErrorName(int status) {
         return switch (status) {
             case 400 -> "BAD_REQUEST";

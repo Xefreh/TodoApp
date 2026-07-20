@@ -1,8 +1,8 @@
 package fr.xefreh.todoapp.backend.service;
 
 /**
- * Résultat d'une inscription ou d'une connexion réussie : le jeton JWT à utiliser
- * pour les requêtes authentifiées, et l'identifiant de l'utilisateur.
+ * Result of a successful registration or login: the JWT token to use for authenticated
+ * requests, and the user id.
  */
 public record AuthResult(String token, long userId) {
 }

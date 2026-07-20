@@ -5,14 +5,14 @@ import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 /**
- * Note persistée localement en cache de l'API REST.
+ * Note persisted locally as a cache of the REST API.
  *
- * <p>Depuis la bascule vers l'API REST, l'{@code id} est l'identifiant **serveur** (plus
- * d'auto-génération locale) : les notes sont créées côté serveur puis insérées localement
- * avec l'id reçu. {@code createdAt} reste fixé par le serveur.</p>
+ * <p>Since the switch to the REST API, {@code id} is the **server** identifier (no more
+ * local auto-generation): notes are created on the server, then inserted locally with the
+ * received id. {@code createdAt} is still set by the server.</p>
  *
- * <p>{@code title}, {@code body}, {@code imageUri} sont désormais mutables pour permettre
- * la mise à jour locale après un PUT serveur.</p>
+ * <p>{@code title}, {@code body}, {@code imageUri} are now mutable to allow local updates
+ * after a server PUT.</p>
  */
 @Entity(tableName = "notes")
 public class Note {
@@ -23,7 +23,7 @@ public class Note {
     private String imageUri;
     private long createdAt;
 
-    /** Constructeur Room requis. */
+    /** Required Room constructor. */
     public Note(Long id, String title, String body, String imageUri, long createdAt) {
         this.id = id;
         this.title = title;
@@ -32,7 +32,7 @@ public class Note {
         this.createdAt = createdAt;
     }
 
-    /** Construit une note locale prête à être envoyée au serveur (id et createdAt assignés par l'API). */
+    /** Builds a local note ready to be sent to the server (id and createdAt assigned by the API). */
     @Ignore
     public Note(String title, String body, String imageUri) {
         this(null, title, body, imageUri, 0L);

@@ -6,8 +6,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 
 /**
- * Implémentation JPA de {@link UserRepository}. Chaque méthode ouvre une transaction
- * courte sur l'{@link EntityManager} partagé.
+ * JPA implementation of {@link UserRepository}. Each method opens a short transaction
+ * on the shared {@link EntityManager}.
  */
 public class JpaUserRepository implements UserRepository {
 

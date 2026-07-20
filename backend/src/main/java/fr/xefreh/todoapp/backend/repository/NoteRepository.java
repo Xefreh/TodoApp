@@ -5,28 +5,28 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Accès aux notes. Interface isolée de l'implémentation JPA afin d'être mockable
- * dans les tests unitaires du service. Toutes les méthodes sont indexées sur
- * l'identifiant du propriétaire pour garantir l'isolation des données par utilisateur.
+ * Access to notes. Interface kept separate from the JPA implementation so it can be mocked
+ * in the service unit tests. All methods are keyed on the owner's id to guarantee per-user
+ * data isolation.
  */
 public interface NoteRepository {
 
-    /** Toutes les notes d'un propriétaire, triées de la plus récente à la plus ancienne. */
+    /** All notes of an owner, sorted from newest to oldest. */
     List<NoteEntity> findAllByOwner(Long ownerId);
 
-    /** Une note précise si elle appartient au propriétaire, sinon vide. */
+    /** A specific note if it belongs to the owner, otherwise empty. */
     Optional<NoteEntity> findByIdAndOwner(Long id, Long ownerId);
 
     /**
-     * Crée une note appartenant à l'utilisateur {@code ownerId}. Les champs de {@code note}
-     * (title, body, imageUri, createdAt) sont recopiés ; le owner est résolu dans la même
-     * transaction. L'id de {@code note} est ignoré (auto-généré).
+     * Creates a note owned by user {@code ownerId}. The fields of {@code note}
+     * (title, body, imageUri, createdAt) are copied; the owner is resolved within the same
+     * transaction. The id of {@code note} is ignored (auto-generated).
      */
     NoteEntity create(NoteEntity note, Long ownerId);
 
-    /** Met à jour une note existante (le owner et l'id de {@code note} doivent être positionnés). */
+    /** Updates an existing note (the owner and id of {@code note} must be set). */
     NoteEntity save(NoteEntity note);
 
-    /** Supprime une note par son identifiant si elle appartient au propriétaire. Renvoie vrai si supprimée. */
+    /** Deletes a note by its id if it belongs to the owner. Returns true if deleted. */
     boolean deleteByIdAndOwner(Long id, Long ownerId);
 }

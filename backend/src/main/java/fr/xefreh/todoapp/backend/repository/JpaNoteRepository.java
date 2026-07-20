@@ -8,9 +8,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Implémentation JPA de {@link NoteRepository}. Toutes les requêtes filtrent par
- * l'identifiant du propriétaire pour garantir qu'un utilisateur ne peut accéder
- * qu'à ses propres notes.
+ * JPA implementation of {@link NoteRepository}. All queries filter by the owner's id
+ * to guarantee that a user can only access their own notes.
  */
 public class JpaNoteRepository implements NoteRepository {
 
@@ -49,8 +48,8 @@ public class JpaNoteRepository implements NoteRepository {
         EntityManager em = JpaConfig.entityManagerFactory().createEntityManager();
         em.getTransaction().begin();
         try {
-            // Résout la référence propriétaire dans la même transaction : getReference ne fait
-            // pas de select mais valide l'existence de la FK au flush/commit.
+            // Resolves the owner reference within the same transaction: getReference does
+            // not issue a select but validates the FK existence on flush/commit.
             UserEntity owner = em.getReference(UserEntity.class, ownerId);
             note.setOwner(owner);
             em.persist(note);

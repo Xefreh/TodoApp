@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
 /**
- * Exemple de test unitaire local (JVM host) exécuté sur la plateforme JUnit 5 (Jupiter).
+ * Sample local unit test (host JVM) running on the JUnit 5 (Jupiter) platform.
  *
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */

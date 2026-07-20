@@ -12,15 +12,15 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 /**
- * Implémentation de {@link NotesRepository} orchestrant {@link TodoApi} (réseau) et le cache
- * Room via {@link NoteDao}.
+ * Implementation of {@link NotesRepository} orchestrating {@link TodoApi} (network) and the
+ * Room cache via {@link NoteDao}.
  *
- * <p>L'{@code authHeader} ("Bearer &lt;token&gt;") est passé explicitement à chaque appel bien
- * que l'{@code AuthInterceptor} OkHttp l'injecte déjà : cela rend l'implémentation testable
- * sans intercepteur (le mock de {@code TodoApi} reçoit l'en-tête en paramètre).</p>
+ * <p>The {@code authHeader} ("Bearer &lt;token&gt;") is passed explicitly to each call even
+ * though the OkHttp {@code AuthInterceptor} already injects it: this makes the implementation
+ * testable without an interceptor (the {@code TodoApi} mock receives the header as a parameter).</p>
  *
- * <p>Toutes les méthodes sont <b>bloquantes</b> ({@code execute()} synchrone) et lèvent
- * {@link ApiException} en cas d'échec. L'appelant doit les invoquer hors thread principal.</p>
+ * <p>All methods are <b>blocking</b> (synchronous {@code execute()}) and throw
+ * {@link ApiException} on failure. Callers must invoke them off the main thread.</p>
  */
 public class NotesRepositoryImpl implements NotesRepository {
 
@@ -42,7 +42,7 @@ public class NotesRepositoryImpl implements NotesRepository {
         for (NoteDto dto : dtos) {
             notes.add(toEntity(dto));
         }
-        // Remplace le cache local : clear puis insert (DAO synchrone).
+        // Replaces the local cache: clear then insert (synchronous DAO).
         noteDao.clear();
         for (Note n : notes) {
             noteDao.insert(n);
@@ -67,13 +67,13 @@ public class NotesRepositoryImpl implements NotesRepository {
         NoteDto updated = execute(api.updateNote(auth, note.getId(), payload));
         Note entity = toEntity(updated);
         entity.setId(note.getId());
-        noteDao.insert(entity); // REPLACE sur la même PK serveur
+        noteDao.insert(entity); // REPLACE on the same server PK
     }
 
     @Override
     public void delete(long serverId) {
         String auth = requireAuthHeader();
-        // DELETE renvoie un corps vide (204) : on vérifie juste le succès HTTP.
+        // DELETE returns an empty body (204): just check HTTP success.
         Response<Void> response;
         try {
             response = api.deleteNote(auth, serverId).execute();
@@ -96,7 +96,7 @@ public class NotesRepositoryImpl implements NotesRepository {
         return header;
     }
 
-    /** Exécute un {@link Call} de manière synchrone et lève {@link ApiException} en cas d'échec. */
+    /** Executes a {@link Call} synchronously and throws {@link ApiException} on failure. */
     private static <T> T execute(Call<T> call) {
         try {
             Response<T> response = call.execute();

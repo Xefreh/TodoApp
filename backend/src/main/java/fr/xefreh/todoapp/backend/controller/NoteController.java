@@ -10,8 +10,8 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Endpoints CRUD des notes. Tous supposent un propriétaire authentifié (l'{@link AuthFilter}
- * a positionné {@link AuthFilter#USER_ID_KEY} dans le contexte).
+ * Note CRUD endpoints. All assume an authenticated owner (the {@link AuthFilter}
+ * has set {@link AuthFilter#USER_ID_KEY} in the context).
  *
  * <ul>
  *   <li>{@link #ListNotes}   {@code GET    /api/notes}</li>
@@ -32,13 +32,13 @@ public final class NoteController {
     private static long ownerId(Context ctx) {
         Long id = ctx.attribute(AuthFilter.USER_ID_KEY);
         if (id == null) {
-            // Ne devrait pas arriver : le filtre before a déjà répondu 401.
+            // Should not happen: the before filter already returned 401.
             throw new IllegalStateException("No authenticated user on a protected route");
         }
         return id;
     }
 
-    /** {@code GET /api/notes} — liste des notes du propriétaire. */
+    /** {@code GET /api/notes} — list of the owner's notes. */
     public final Handler ListNotes = new Handler() {
         @Override
         public void handle(@NotNull Context ctx) {
@@ -47,7 +47,7 @@ public final class NoteController {
         }
     };
 
-    /** {@code POST /api/notes} — crée une note. */
+    /** {@code POST /api/notes} — creates a note. */
     public final Handler CreateNote = new Handler() {
         @Override
         public void handle(@NotNull Context ctx) {
@@ -61,7 +61,7 @@ public final class NoteController {
         }
     };
 
-    /** {@code GET /api/notes/{id}} — une note du propriétaire. */
+    /** {@code GET /api/notes/{id}} — one of the owner's notes. */
     public final Handler GetNote = new Handler() {
         @Override
         public void handle(@NotNull Context ctx) {
@@ -74,7 +74,7 @@ public final class NoteController {
         }
     };
 
-    /** {@code PUT /api/notes/{id}} — met à jour une note du propriétaire. */
+    /** {@code PUT /api/notes/{id}} — updates one of the owner's notes. */
     public final Handler UpdateNote = new Handler() {
         @Override
         public void handle(@NotNull Context ctx) {
@@ -92,7 +92,7 @@ public final class NoteController {
         }
     };
 
-    /** {@code DELETE /api/notes/{id}} — supprime une note du propriétaire. */
+    /** {@code DELETE /api/notes/{id}} — deletes one of the owner's notes. */
     public final Handler DeleteNote = new Handler() {
         @Override
         public void handle(@NotNull Context ctx) {
@@ -106,7 +106,7 @@ public final class NoteController {
         }
     };
 
-    /** Corps d'erreur JSON standard. */
+    /** Standard JSON error body. */
     public record ErrorBody(String error, String message) {
     }
 }

@@ -11,8 +11,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 /**
- * Une note appartient à un {@link UserEntity propriétaire}. {@code createdAt} est positionné
- * par le serveur à la création et reste immutable ensuite.
+ * A note belongs to an {@link UserEntity owner}. {@code createdAt} is set by the server on
+ * creation and remains immutable afterwards.
  */
 @Entity
 @Table(name = "notes")

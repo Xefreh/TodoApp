@@ -7,10 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests de {@link JwtTokenService} sur l'implémentation réelle (pas de mock) : on
- * valide le roundtrip sign→verify et la détection des tokens malformés/altérés.
+ * Tests for {@link JwtTokenService} on the real implementation (no mock): we validate the
+ * sign→verify roundtrip and the detection of malformed/tampered tokens.
  *
- * <p>La clé de test est explicite (≥ 32 octets) via le constructeur dédié.</p>
+ * <p>The test key is explicit (>= 32 bytes) via the dedicated constructor.</p>
  */
 class JwtTokenServiceTest {
 
@@ -34,7 +34,7 @@ class JwtTokenServiceTest {
 
     @Test
     void verify_throwsForTokenSignedWithDifferentKey() {
-        // Token signé par un autre service (autre clé).
+        // Token signed by another service (different key).
         JwtTokenService other = new JwtTokenService("another-32-byte-secret-key-here!!!");
         String foreignToken = other.issueFor(1L);
 

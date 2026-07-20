@@ -18,8 +18,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
- * Tests unitaires de {@link AuthServiceImpl}. Toutes les dépendances (des interfaces)
- * sont mockées avec Mockito : on valide la logique d'orchestration sans toucher à la base.
+ * Unit tests for {@link AuthServiceImpl}. All dependencies (interfaces) are mocked with
+ * Mockito: we validate the orchestration logic without touching the database.
  */
 @ExtendWith(MockitoExtension.class)
 class AuthServiceImplTest {
@@ -36,12 +36,12 @@ class AuthServiceImplTest {
 
     @BeforeEach
     void resetMocks() {
-        // Les stubs sont déclarés par test pour rester explicites.
+        // Stubs are declared per test to stay explicit.
     }
 
     @Test
     void register_persistsHashedUserAndReturnsToken() {
-        // Arrange : le username est libre, le hash et le token sont des valeurs fixes.
+        // Arrange: the username is free, the hash and token are fixed values.
         when(userRepository.findByUsername("alice")).thenReturn(null);
         when(passwordHasher.hash("s3cret")).thenReturn("hashed-pw");
         when(userRepository.save(any(UserEntity.class))).thenAnswer(inv -> {
@@ -67,7 +67,7 @@ class AuthServiceImplTest {
 
         assertThrows(UsernameTakenException.class, () -> authService.register("alice", "s3cret"));
 
-        // Le mot de passe ne doit pas être haché, ni l'utilisateur sauvegardé.
+        // The password must not be hashed, nor the user saved.
         verify(passwordHasher, never()).hash(anyString());
         verify(userRepository, never()).save(any(UserEntity.class));
     }

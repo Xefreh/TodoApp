@@ -21,9 +21,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
- * Tests unitaires de {@link NoteServiceImpl}. Le {@link NoteRepository} (interface) est
- * mocké : on valide le filtrage par propriétaire, le mappage entité↔DTO, l'attribution
- * du createdAt et l'immuabilité de ce dernier lors d'un update.
+ * Unit tests for {@link NoteServiceImpl}. The {@link NoteRepository} (interface) is mocked:
+ * we validate filtering by owner, entity<->DTO mapping, assignment of createdAt, and its
+ * immutability on update.
  */
 @ExtendWith(MockitoExtension.class)
 class NoteServiceImplTest {
@@ -49,7 +49,7 @@ class NoteServiceImplTest {
 
         assertEquals(2, result.size());
         assertEquals(10L, result.get(0).id);
-        // (vérifie la présence/l'ordre et le mappage id)
+        // (checks presence/order and id mapping)
         verify(noteRepository).findAllByOwner(OWNER);
     }
 
@@ -73,7 +73,7 @@ class NoteServiceImplTest {
         assertEquals("Title", created.title);
         assertEquals("Body", created.body);
         assertEquals("img-uri", created.imageUri);
-        // createdAt doit avoir été positionné par le service (valeur proche de maintenant).
+        // createdAt must have been set by the service (value close to now).
         long now = System.currentTimeMillis();
         assert Math.abs(now - created.createdAt) < 5000 : "createdAt should be ~now";
     }
@@ -156,7 +156,7 @@ class NoteServiceImplTest {
     void delete_succeedsWhenRepositoryReturnsTrue() {
         when(noteRepository.deleteByIdAndOwner(7L, OWNER)).thenReturn(true);
 
-        noteService.delete(7L, OWNER); // ne lève pas
+        noteService.delete(7L, OWNER); // does not throw
 
         verify(noteRepository).deleteByIdAndOwner(7L, OWNER);
     }

@@ -30,13 +30,13 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 /**
- * Tests unitaires de {@link NotesRepositoryImpl}. Les deux dépendances principales
- * ({@link TodoApi} Retrofit et {@link NoteDao} Room) sont des interfaces mockées avec
- * Mockito. Les {@link Call} Retrofit sont stubbés pour renvoyer une {@link Response}.
+ * Unit tests for {@link NotesRepositoryImpl}. The two main dependencies
+ * ({@link TodoApi} Retrofit and {@link NoteDao} Room) are interfaces mocked with
+ * Mockito. The Retrofit {@link Call}s are stubbed to return a {@link Response}.
  *
- * <p>Important : on construit toujours le {@link Call} mock <b>avant</b> d'appeler
- * {@code when(api...)} pour éviter une {@code UnfinishedStubbingException} (Mockito détecte
- * un stubbing imbriqué si l'on crée/stubbe un mock pendant l'évaluation d'un autre stubbing).</p>
+ * <p>Important: always build the mock {@link Call} <b>before</b> calling
+ * {@code when(api...)} to avoid an {@code UnfinishedStubbingException} (Mockito detects a
+ * nested stubbing if you create/stub a mock while another stubbing is being evaluated).</p>
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -200,7 +200,7 @@ class NotesRepositoryImplTest {
         return d;
     }
 
-    /** Argument matcher vérifiant juste l'id de la Note insérée. */
+    /** Argument matcher checking only the id of the inserted Note. */
     private static Note noteWithId(long id) {
         return ArgumentMatchers.argThat(n -> n != null && n.getId() == id);
     }

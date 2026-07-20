@@ -1,7 +1,7 @@
 package fr.xefreh.todoapp.backend.dto;
 
 /**
- * Corps de réponse d'une inscription ou connexion réussie.
+ * Response body of a successful registration or login.
  */
 public class AuthResponseDto {
     public String token;

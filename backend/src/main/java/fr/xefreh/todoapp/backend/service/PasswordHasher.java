@@ -1,14 +1,14 @@
 package fr.xefreh.todoapp.backend.service;
 
 /**
- * Hachage et vérification de mots de passe. Interface isolée de l'implémentation
- * (argon2id) afin d'être mockable dans les tests unitaires du service.
+ * Password hashing and verification. Interface kept separate from the implementation
+ * (argon2id) so it can be mocked in the service unit tests.
  */
 public interface PasswordHasher {
 
-    /** Calcule le hash d'un mot de passe en clair. */
+    /** Computes the hash of a plain-text password. */
     String hash(String plainPassword);
 
-    /** Vérifie qu'un mot de passe en clair correspond à un hash précédemment calculé. */
+    /** Verifies that a plain-text password matches a previously computed hash. */
     boolean verify(String plainPassword, String hashedPassword);
 }

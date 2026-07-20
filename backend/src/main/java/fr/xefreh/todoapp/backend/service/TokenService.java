@@ -1,14 +1,14 @@
 package fr.xefreh.todoapp.backend.service;
 
 /**
- * Signature et vérification des jetons d'authentification (JWT). Interface isolée
- * de l'implémentation (jjwt) afin d'être mockable dans les tests unitaires.
+ * Signing and verification of authentication tokens (JWT). Interface kept separate from
+ * the implementation (jjwt) so it can be mocked in unit tests.
  */
 public interface TokenService {
 
-    /** Génère un jeton signé portant l'identifiant de l'utilisateur. */
+    /** Generates a signed token carrying the user id. */
     String issueFor(long userId);
 
-    /** Vérifie la signature d'un jeton et renvoie l'identifiant utilisateur qu'il porte. */
+    /** Verifies a token's signature and returns the user id it carries. */
     long verify(String token);
 }

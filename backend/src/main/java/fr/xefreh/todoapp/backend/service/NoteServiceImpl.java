@@ -6,10 +6,10 @@ import fr.xefreh.todoapp.backend.repository.NoteRepository;
 import java.util.List;
 
 /**
- * Implémentation de {@link NoteService} construite par injection de dépendances.
+ * {@link NoteService} implementation built via dependency injection.
  *
- * L'unique dépendance ({@link NoteRepository}) est une interface : la classe est donc
- * entièrement testable avec un mock Mockito (cf. NoteServiceTest).
+ * The only dependency ({@link NoteRepository}) is an interface: the class is therefore
+ * fully testable with a Mockito mock (see NoteServiceTest).
  */
 public class NoteServiceImpl implements NoteService {
 
@@ -62,7 +62,7 @@ public class NoteServiceImpl implements NoteService {
         }
     }
 
-    /** Mappe une entité persistée vers le DTO exposé par l'API. */
+    /** Maps a persisted entity to the DTO exposed by the API. */
     private static NoteDto toDto(NoteEntity entity) {
         return new NoteDto(
                 entity.getId(),

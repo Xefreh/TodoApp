@@ -21,11 +21,11 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
- * Écran de démarrage (launcher) : authentifie l'utilisateur avant d'accéder aux notes.
+ * Launcher (startup) screen: authenticates the user before accessing notes.
  *
- * <p>Si une session valide existe déjà (token mémorisé), redirige directement vers
- * {@link MainActivity}. Sinon affiche l'{@link AuthScreen} et, sur login/register réussi,
- * sauvegarde la session ({@link SessionManager}) puis démarre {@code MainActivity}.</p>
+ * <p>If a valid session already exists (stored token), redirects directly to
+ * {@link MainActivity}. Otherwise shows the {@link AuthScreen} and, on successful
+ * login/register, saves the session ({@link SessionManager}) then starts {@code MainActivity}.</p>
  */
 public class LoginActivity extends AppCompatActivity {
 
@@ -40,7 +40,7 @@ public class LoginActivity extends AppCompatActivity {
         sessionManager = new SessionManager(this);
         RetrofitProvider.init(sessionManager);
 
-        // Déjà connecté -> on court-circuite l'écran de login.
+        // Already logged in -> short-circuit the login screen.
         if (sessionManager.isLoggedIn()) {
             startMainActivity();
             return;

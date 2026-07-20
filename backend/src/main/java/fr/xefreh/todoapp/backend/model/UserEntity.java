@@ -8,8 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 /**
- * Utilisateur de l'API. Le mot de passe est stocké sous forme hachée (argon2id),
- * jamais en clair.
+ * API user. The password is stored hashed (argon2id), never in plain text.
  */
 @Entity
 @Table(name = "users")

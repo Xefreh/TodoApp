@@ -1,11 +1,11 @@
 package fr.xefreh.todoapp.backend.dto;
 
 /**
- * Représentation d'une note côté API.
+ * API-side representation of a note.
  *
- * <p>En entrée (POST/PUT) seuls {@code title} et {@code body} (et {@code imageUri}) sont
- * attendus : {@code id} et {@code createdAt} sont assignés par le serveur. En sortie (GET)
- * tous les champs sont renseignés.</p>
+ * <p>On input (POST/PUT) only {@code title} and {@code body} (and {@code imageUri}) are
+ * expected: {@code id} and {@code createdAt} are assigned by the server. On output (GET)
+ * all fields are populated.</p>
  */
 public class NoteDto {
     public Long id;

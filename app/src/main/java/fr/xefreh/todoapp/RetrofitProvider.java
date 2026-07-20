@@ -10,19 +10,19 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
- * Fournit un singleton {@link TodoApi} (Retrofit) pointant vers le backend local.
+ * Provides a singleton {@link TodoApi} (Retrofit) pointing to the local backend.
  *
- * <p>{@code baseUrl} utilise {@code 10.0.2.2}, qui depuis l'émulateur Android correspond au
- * {@code localhost} de la machine hôte (où tourne le serveur Javalin sur le port 7000).
- * Le trafic est en HTTP clair : autorisé via {@code network_security_config.xml} pour ce
- * domaine uniquement.</p>
+ * <p>{@code baseUrl} uses {@code 10.0.2.2}, which from the Android emulator maps to the
+ * host machine's {@code localhost} (where the Javalin server runs on port 7000).
+ * Traffic is plain HTTP: allowed via {@code network_security_config.xml} for this
+ * domain only.</p>
  *
- * <p>Un {@code AuthInterceptor} injecte l'en-tête {@code Authorization: Bearer <token>} lu
- * dans le {@link SessionManager} sur chaque requête authentifiée.</p>
+ * <p>An {@code AuthInterceptor} injects the {@code Authorization: Bearer <token>} header,
+ * read from the {@link SessionManager}, on every authenticated request.</p>
  */
 public final class RetrofitProvider {
 
-    /** Base URL du backend, joignable depuis l'émulateur via l'alias réseau hôte. */
+    /** Base URL of the backend, reachable from the emulator via the host network alias. */
     public static final String BASE_URL = "http://10.0.2.2:7000/api/";
 
     private static volatile TodoApi api;
@@ -30,7 +30,7 @@ public final class RetrofitProvider {
     private RetrofitProvider() {
     }
 
-    /** Initialise le singleton avec le {@link SessionManager} de l'application. À appeler au démarrage. */
+    /** Initializes the singleton with the application's {@link SessionManager}. Call at startup. */
     public static void init(SessionManager sessionManager) {
         if (api == null) {
             synchronized (RetrofitProvider.class) {
@@ -41,7 +41,7 @@ public final class RetrofitProvider {
         }
     }
 
-    /** Récupère l'API. Doit être appelé après {@link #init(SessionManager)}. */
+    /** Returns the API. Must be called after {@link #init(SessionManager)}. */
     public static TodoApi getApi() {
         if (api == null) {
             throw new IllegalStateException("RetrofitProvider not initialized. Call init(SessionManager) first.");
@@ -57,7 +57,7 @@ public final class RetrofitProvider {
                 builder.addHeader("Authorization", authHeader);
             }
             Response response = chain.proceed(builder.build());
-            // 401 côté serveur => session invalide (token expiré/révoqué).
+            // 401 from the server => invalid session (expired/revoked token).
             if (response.code() == 401) {
                 sessionManager.clear();
             }

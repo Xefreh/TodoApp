@@ -4,24 +4,24 @@ import fr.xefreh.todoapp.backend.dto.NoteDto;
 import java.util.List;
 
 /**
- * Logique métier des notes, indexée sur l'identifiant du propriétaire authentifié.
- * Interface isolée de l'implémentation ({@link NoteServiceImpl}) afin d'être testée
- * avec un {@code NoteRepository} mocké.
+ * Note business logic, keyed on the authenticated owner's id.
+ * Interface kept separate from the implementation ({@link NoteServiceImpl}) so it can be
+ * tested with a mocked {@code NoteRepository}.
  */
 public interface NoteService {
 
-    /** Toutes les notes du propriétaire, de la plus récente à la plus ancienne. */
+    /** All notes of the owner, from newest to oldest. */
     List<NoteDto> listForOwner(long ownerId);
 
-    /** Une note du propriétaire. Lève {@link NoteNotFoundException} si absente. */
+    /** One of the owner's notes. Throws {@link NoteNotFoundException} if absent. */
     NoteDto getForOwner(long id, long ownerId);
 
-    /** Crée une note : assigne le propriétaire et le createdAt courant. */
+    /** Creates a note: assigns the owner and the current createdAt. */
     NoteDto create(long ownerId, NoteDto input);
 
-    /** Met à jour une note existante du propriétaire. Lève {@link NoteNotFoundException} si absente. */
+    /** Updates an existing note of the owner. Throws {@link NoteNotFoundException} if absent. */
     NoteDto update(long id, long ownerId, NoteDto input);
 
-    /** Supprime une note du propriétaire. Lève {@link NoteNotFoundException} si absente. */
+    /** Deletes a note of the owner. Throws {@link NoteNotFoundException} if absent. */
     void delete(long id, long ownerId);
 }

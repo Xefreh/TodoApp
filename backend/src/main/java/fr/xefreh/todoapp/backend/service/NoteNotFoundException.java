@@ -1,9 +1,9 @@
 package fr.xefreh.todoapp.backend.service;
 
 /**
- * Levée quand une note demandée n'existe pas ou n'appartient pas à l'utilisateur.
- * Le contrôleur la traduit en HTTP 404 (plutôt que 403 pour ne pas fuiter l'existence
- * d'une note appartenant à autrui).
+ * Thrown when a requested note does not exist or does not belong to the user.
+ * The controller translates it into HTTP 404 (rather than 403 to avoid leaking the
+ * existence of a note owned by someone else).
  */
 public class NoteNotFoundException extends RuntimeException {
     public NoteNotFoundException(long id) {

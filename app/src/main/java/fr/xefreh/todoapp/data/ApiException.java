@@ -1,9 +1,9 @@
 package fr.xefreh.todoapp.data;
 
 /**
- * Levée par {@link NotesRepository} (et consorts) en cas d'échec de communication avec
- * l'API REST : erreur réseau, code HTTP >= 400, body illisible. Porte le code HTTP quand
- * disponible (−1 pour une erreur purement réseau).
+ * Thrown by {@link NotesRepository} (and friends) on a communication failure with the
+ * REST API: network error, HTTP code >= 400, unreadable body. Carries the HTTP code when
+ * available (-1 for a purely network error).
  */
 public class ApiException extends RuntimeException {
 

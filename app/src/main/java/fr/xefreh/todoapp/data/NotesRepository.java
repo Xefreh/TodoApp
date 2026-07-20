@@ -4,35 +4,34 @@ import fr.xefreh.todoapp.Note;
 import java.util.List;
 
 /**
- * Accès unifié aux notes : source de vérité = serveur (via {@link TodoApi}), cache local
- * (via Room). Interface isolée de {@link NotesRepositoryImpl} afin d'être testée avec des
- * mocks Mockito ({@code TodoApi} + {@code NoteDao} sont eux-mêmes des interfaces).
+ * Unified access to notes: source of truth = server (via {@link TodoApi}), with a local cache
+ * (via Room). Interface kept separate from {@link NotesRepositoryImpl} so it can be tested with
+ * Mockito mocks ({@code TodoApi} + {@code NoteDao} are themselves interfaces).
  *
- * <p>Les méthodes sont <b>bloquantes</b> et doivent être appelées hors du thread principal
- * (par exemple via un {@code ExecutorService}). Elles lèvent une {@link ApiException} en
- * cas d'échec réseau ou d'erreur HTTP.</p>
+ * <p>Methods are <b>blocking</b> and must be called off the main thread (e.g. via an
+ * {@code ExecutorService}). They throw an {@link ApiException} on network failure or HTTP error.</p>
  */
 public interface NotesRepository {
 
     /**
-     * Recharge toutes les notes depuis le serveur et remplace le cache local.
-     * @return la liste des notes (jamais null).
+     * Reloads all notes from the server and replaces the local cache.
+     * @return the list of notes (never null).
      */
     List<Note> fetchAll();
 
     /**
-     * Crée une note sur le serveur puis l'insère dans le cache local.
-     * @return la note créée (avec id et createdAt serveur).
+     * Creates a note on the server then inserts it into the local cache.
+     * @return the created note (with server id and createdAt).
      */
     Note create(String title, String body, String imageUri);
 
     /**
-     * Met à jour une note sur le serveur puis dans le cache local.
+     * Updates a note on the server then in the local cache.
      */
     void update(Note note);
 
     /**
-     * Supprime une note sur le serveur puis du cache local.
+     * Deletes a note on the server then from the local cache.
      */
     void delete(long serverId);
 }

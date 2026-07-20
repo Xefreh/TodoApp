@@ -4,11 +4,11 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 /**
- * Stockage persistant de la session utilisateur (jeton JWT, id, nom).
+ * Persistent storage of the user session (JWT token, id, name).
  *
- * <p>Wrapper fin autour de {@link SharedPreferences} (fichier privé {@code todo_session}).
- * Utilisé par {@code AuthInterceptor} pour récupérer le jeton à injecter dans chaque requête
- * authentifiée, et par {@code LoginActivity} pour mémoriser/effacer la session.</p>
+ * <p>Thin wrapper around {@link SharedPreferences} (private file {@code todo_session}).
+ * Used by {@code AuthInterceptor} to retrieve the token to inject into each authenticated
+ * request, and by {@code LoginActivity} to save/clear the session.</p>
  */
 public class SessionManager {
 
@@ -24,7 +24,7 @@ public class SessionManager {
                 .getSharedPreferences(PREFS, Context.MODE_PRIVATE);
     }
 
-    /** Mémorise la session après un login/register réussi. */
+    /** Saves the session after a successful login/register. */
     public void saveSession(String token, long userId, String username) {
         prefs.edit()
                 .putString(KEY_TOKEN, token)
@@ -33,12 +33,12 @@ public class SessionManager {
                 .apply();
     }
 
-    /** Le jeton brut, ou {@code null} si non connecté. */
+    /** The raw token, or {@code null} if not logged in. */
     public String getToken() {
         return prefs.getString(KEY_TOKEN, null);
     }
 
-    /** L'en-tête HTTP {@code Authorization} prêt à l'emploi, ou {@code null}. */
+    /** A ready-to-use {@code Authorization} HTTP header, or {@code null}. */
     public String authHeader() {
         String token = getToken();
         return token == null ? null : "Bearer " + token;
@@ -56,7 +56,7 @@ public class SessionManager {
         return getToken() != null;
     }
 
-    /** Efface la session (déconnexion). */
+    /** Clears the session (logout). */
     public void clear() {
         prefs.edit().clear().apply();
     }
