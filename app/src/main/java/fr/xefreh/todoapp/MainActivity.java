@@ -59,9 +59,9 @@ public class MainActivity extends AppCompatActivity {
 		if (wasSaved) {
 			screen.photoCard.setVisibility(View.VISIBLE);
 			Glide.with(this).load(photoUri).centerCrop().into(screen.photoPreview);
-			Toast.makeText(MainActivity.this, "Photo saved to " + photoFile.getPath(), Toast.LENGTH_LONG).show();
+			Toast.makeText(MainActivity.this, getString(R.string.photo_saved_to, photoFile.getPath()), Toast.LENGTH_LONG).show();
 		} else {
-			Toast.makeText(MainActivity.this, "Could not save photo", Toast.LENGTH_SHORT).show();
+			Toast.makeText(MainActivity.this, R.string.photo_save_failed, Toast.LENGTH_SHORT).show();
 		}
 	});
 
@@ -71,9 +71,14 @@ public class MainActivity extends AppCompatActivity {
 		} else {
 			boolean shouldShow = shouldShowRequestPermissionRationale(Manifest.permission.CAMERA);
 			if (shouldShow) {
-				new AlertDialog.Builder(this).setTitle("Camera access needed").setMessage("This lets you attach a photo directly to your notes. Without it, you can still add photos from your gallery.").setPositiveButton("Try Again", (dialog, which) -> MainActivity.this.requestPermissionLauncher.launch(Manifest.permission.CAMERA)).setNegativeButton("Cancel", null).show();
+				new AlertDialog.Builder(this)
+						.setTitle(R.string.camera_access_needed_title)
+						.setMessage(R.string.camera_access_rationale)
+						.setPositiveButton(R.string.action_try_again, (dialog, which) -> MainActivity.this.requestPermissionLauncher.launch(Manifest.permission.CAMERA))
+						.setNegativeButton(R.string.action_cancel, null)
+						.show();
 			} else {
-				Toast.makeText(MainActivity.this, "Camera permission is disabled. Enable it in Settings", Toast.LENGTH_SHORT).show();
+				Toast.makeText(MainActivity.this, R.string.camera_permission_disabled, Toast.LENGTH_SHORT).show();
 			}
 		}
 	});
@@ -187,24 +192,28 @@ public class MainActivity extends AppCompatActivity {
 		});
 
 		screen.attachPhotoButton.setOnClickListener((v -> {
-			new AlertDialog.Builder(this).setTitle("Add Photo").setItems(new String[]{"Take Photo", "Choose from Gallery"}, (dialog, which) -> {
-				if (which == 0) {
-					boolean hasCamera = getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY);
+			new AlertDialog.Builder(this)
+					.setTitle(R.string.add_photo_title)
+					.setItems(new String[]{
+							getString(R.string.action_take_photo),
+							getString(R.string.action_choose_from_gallery)}, (dialog, which) -> {
+						if (which == 0) {
+							boolean hasCamera = getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY);
 
-					if (!hasCamera) {
-						Toast.makeText(MainActivity.this, "Device has no camera", Toast.LENGTH_SHORT).show();
-						return;
-					}
+							if (!hasCamera) {
+								Toast.makeText(MainActivity.this, R.string.device_has_no_camera, Toast.LENGTH_SHORT).show();
+								return;
+							}
 
-					if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-						launchCamera();
-					} else {
-						requestPermissionLauncher.launch(Manifest.permission.CAMERA);
-					}
-				} else {
-					pickImageLauncher.launch(new PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE).build());
-				}
-			}).show();
+							if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+								launchCamera();
+							} else {
+								requestPermissionLauncher.launch(Manifest.permission.CAMERA);
+							}
+						} else {
+							pickImageLauncher.launch(new PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE).build());
+						}
+					}).show();
 		}));
 	}
 
@@ -282,7 +291,7 @@ public class MainActivity extends AppCompatActivity {
 					photoFile = null;
 					photoUri = null;
 					screen.photoCard.setVisibility(View.GONE);
-					Toast.makeText(MainActivity.this, "Could not import image", Toast.LENGTH_SHORT).show();
+					Toast.makeText(MainActivity.this, R.string.image_import_failed, Toast.LENGTH_SHORT).show();
 				});
 			}
 		});
