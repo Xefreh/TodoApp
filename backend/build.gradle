@@ -33,7 +33,7 @@ test {
     useJUnitPlatform()
 }
 
-// Démarrage du serveur en mode développement depuis la racine : ./gradlew :backend:run
+// Start the server in development mode from the root: ./gradlew :backend:run
 run {
     standardInput = System.in
 }
