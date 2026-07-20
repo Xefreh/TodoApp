@@ -92,7 +92,7 @@ public class NotesListActivity extends AppCompatActivity {
 					screen.syncButton.setEnabled(true);
 					if (manual) {
 						Toast.makeText(NotesListActivity.this,
-								"Synced " + synced.size() + " notes",
+								getString(R.string.synced_notes_count, synced.size()),
 								Toast.LENGTH_SHORT).show();
 					}
 				});
@@ -104,7 +104,7 @@ public class NotesListActivity extends AppCompatActivity {
 						return;
 					}
 					Toast.makeText(NotesListActivity.this,
-							"Sync failed: " + e.getMessage(),
+							getString(R.string.sync_failed, e.getMessage()),
 							Toast.LENGTH_LONG).show();
 				});
 			}

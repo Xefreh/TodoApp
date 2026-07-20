@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
 							return;
 						}
 						Toast.makeText(MainActivity.this,
-								"Save failed: " + e.getMessage(),
+								getString(R.string.save_failed, e.getMessage()),
 								Toast.LENGTH_LONG).show();
 					});
 				}
