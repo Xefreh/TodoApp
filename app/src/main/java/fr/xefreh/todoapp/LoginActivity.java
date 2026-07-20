@@ -38,7 +38,7 @@ public class LoginActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
 
         sessionManager = new SessionManager(this);
-        RetrofitProvider.init(sessionManager);
+        // RetrofitProvider is initialized by TodoApplication — no need to do it here.
 
         // Already logged in -> short-circuit the login screen.
         if (sessionManager.isLoggedIn()) {
