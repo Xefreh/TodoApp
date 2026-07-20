@@ -45,6 +45,8 @@ import fr.xefreh.todoapp.ui.MainScreen;
 
 public class MainActivity extends AppCompatActivity {
 
+	private static final String STATE_PHOTO_PATH = "state_photo_path";
+
 	private MainScreen screen;
 	private File photoFile;
 	private Uri photoUri;
@@ -93,6 +95,18 @@ public class MainActivity extends AppCompatActivity {
 
 		screen = new MainScreen(this);
 		setContentView(screen.root);
+
+		// Restore a previously attached photo after a configuration change (rotation).
+		if (savedInstanceState != null) {
+			String photoPath = savedInstanceState.getString(STATE_PHOTO_PATH);
+			if (photoPath != null) {
+				photoFile = new File(photoPath);
+				photoUri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", photoFile);
+				screen.photoCard.setVisibility(View.VISIBLE);
+				Glide.with(this).load(photoUri).centerCrop().into(screen.photoPreview);
+			}
+		}
+
 		swipeNavigationDetector = new SwipeNavigationDetector(
 				this,
 				SwipeNavigationDetector.Direction.LEFT,
@@ -200,6 +214,14 @@ public class MainActivity extends AppCompatActivity {
 			swipeNavigationDetector.onTouchEvent(event);
 		}
 		return super.dispatchTouchEvent(event);
+	}
+
+	@Override
+	protected void onSaveInstanceState(@androidx.annotation.NonNull Bundle outState) {
+		super.onSaveInstanceState(outState);
+		if (photoFile != null) {
+			outState.putString(STATE_PHOTO_PATH, photoFile.getAbsolutePath());
+		}
 	}
 
 	@Override
