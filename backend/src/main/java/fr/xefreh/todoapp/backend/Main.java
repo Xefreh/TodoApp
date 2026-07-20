@@ -9,9 +9,11 @@ import fr.xefreh.todoapp.backend.repository.JpaUserRepository;
 import fr.xefreh.todoapp.backend.security.AuthFilter;
 import fr.xefreh.todoapp.backend.service.Argon2PasswordHasher;
 import fr.xefreh.todoapp.backend.service.AuthException;
+import fr.xefreh.todoapp.backend.service.AuthService;
 import fr.xefreh.todoapp.backend.service.AuthServiceImpl;
 import fr.xefreh.todoapp.backend.service.JwtTokenService;
 import fr.xefreh.todoapp.backend.service.NoteNotFoundException;
+import fr.xefreh.todoapp.backend.service.NoteService;
 import fr.xefreh.todoapp.backend.service.NoteServiceImpl;
 import fr.xefreh.todoapp.backend.service.PasswordHasher;
 import fr.xefreh.todoapp.backend.service.TokenService;
@@ -40,14 +42,28 @@ public final class Main {
         // --- Service wiring (manual dependency assembly) ---
         PasswordHasher passwordHasher = new Argon2PasswordHasher();
         TokenService tokenService = new JwtTokenService();
-        AuthServiceImpl authService = new AuthServiceImpl(
+        AuthService authService = new AuthServiceImpl(
                 new JpaUserRepository(), passwordHasher, tokenService);
-        AuthController authController = new AuthController(authService);
+        NoteService noteService = new NoteServiceImpl(new JpaNoteRepository());
 
-        NoteServiceImpl noteService = new NoteServiceImpl(new JpaNoteRepository());
+        createApp(authService, noteService, tokenService).start(PORT);
+
+        Runtime.getRuntime().addShutdownHook(new Thread(JpaConfig::shutdown));
+
+        System.out.println("TodoApp backend started on http://0.0.0.0:" + PORT);
+    }
+
+    /**
+     * Builds the Javalin app (routes, auth filter, exception handlers) around the given
+     * services. Extracted from {@link #main} so tests can spin the full HTTP stack with
+     * mocked services (see ApiErrorContractTest).
+     */
+    public static Javalin createApp(AuthService authService, NoteService noteService,
+                                    TokenService tokenService) {
+        AuthController authController = new AuthController(authService);
         NoteController noteController = new NoteController(noteService);
 
-        Javalin.create(config -> {
+        return Javalin.create(config -> {
             // Permissive CORS in development (curl/browser tests from the host).
             config.bundledPlugins.enableCors(cors -> cors.addRule(rule -> rule.anyHost()));
 
@@ -95,11 +111,7 @@ public final class Main {
                 ctx.status(500);
                 ctx.json(new ErrorBody("INTERNAL_ERROR", e.getMessage()));
             });
-        }).start(PORT);
-
-        Runtime.getRuntime().addShutdownHook(new Thread(JpaConfig::shutdown));
-
-        System.out.println("TodoApp backend started on http://0.0.0.0:" + PORT);
+        });
     }
 
     /** Response body of the health probe. */
