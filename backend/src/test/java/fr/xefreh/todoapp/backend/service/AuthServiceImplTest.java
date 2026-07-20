@@ -120,6 +120,39 @@ class AuthServiceImplTest {
     }
 
     @Test
+    void register_normalizesUsernameBeforeLookupAndPersist() {
+        when(userRepository.findByUsername("alice")).thenReturn(null);
+        when(passwordHasher.hash("s3cret")).thenReturn("hashed-pw");
+        when(userRepository.save(any(UserEntity.class))).thenAnswer(inv -> {
+            UserEntity u = inv.getArgument(0);
+            u.setId(3L);
+            return u;
+        });
+        when(tokenService.issueFor(3L)).thenReturn("jwt-3");
+
+        AuthResult result = authService.register("  Alice  ", "s3cret");
+
+        verify(userRepository).findByUsername("alice");
+        verify(userRepository).save(org.mockito.ArgumentMatchers.argThat(
+                u -> "alice".equals(u.getUsername())));
+        assertEquals("jwt-3", result.token());
+    }
+
+    @Test
+    void login_normalizesUsernameBeforeLookup() {
+        UserEntity stored = new UserEntity("alice", "hashed-pw");
+        stored.setId(7L);
+        when(userRepository.findByUsername("alice")).thenReturn(stored);
+        when(passwordHasher.verify("s3cret", "hashed-pw")).thenReturn(true);
+        when(tokenService.issueFor(7L)).thenReturn("jwt-7");
+
+        AuthResult result = authService.login("ALICE ", "s3cret");
+
+        assertEquals("jwt-7", result.token());
+        verify(userRepository).findByUsername("alice");
+    }
+
+    @Test
     void login_succeedsWhenPasswordMatches() {
         UserEntity stored = new UserEntity("alice", "hashed-pw");
         stored.setId(7L);

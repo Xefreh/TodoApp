@@ -2,6 +2,7 @@ package fr.xefreh.todoapp.backend.service;
 
 import fr.xefreh.todoapp.backend.model.UserEntity;
 import fr.xefreh.todoapp.backend.repository.UserRepository;
+import java.util.Locale;
 
 /**
  * {@link AuthService} implementation built via dependency injection.
@@ -32,19 +33,20 @@ public class AuthServiceImpl implements AuthService {
         if (password == null || password.length() < MIN_PASSWORD_LENGTH) {
             throw new WeakPasswordException(MIN_PASSWORD_LENGTH);
         }
-        if (userRepository.findByUsername(username) != null) {
-            throw new UsernameTakenException(username);
+        String normalized = normalizeUsername(username);
+        if (userRepository.findByUsername(normalized) != null) {
+            throw new UsernameTakenException(normalized);
         }
         String hash = passwordHasher.hash(password);
         UserEntity saved;
         try {
-            saved = userRepository.save(new UserEntity(username, hash));
+            saved = userRepository.save(new UserEntity(normalized, hash));
         } catch (RuntimeException e) {
             // TOCTOU race: a concurrent request inserted the same username between the check
             // above and this insert, and the unique constraint rejected it. If the username
             // now exists, translate the failure into the expected 409; otherwise rethrow.
-            if (userRepository.findByUsername(username) != null) {
-                throw new UsernameTakenException(username);
+            if (userRepository.findByUsername(normalized) != null) {
+                throw new UsernameTakenException(normalized);
             }
             throw e;
         }
@@ -54,7 +56,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResult login(String username, String password) {
-        UserEntity user = userRepository.findByUsername(username);
+        UserEntity user = userRepository.findByUsername(normalizeUsername(username));
         // Constant-time behavior: run a full argon2 verification even when the user does
         // not exist, so the response time does not reveal whether the account exists.
         // Beware: the verification must be evaluated BEFORE checking user == null —
@@ -66,5 +68,14 @@ public class AuthServiceImpl implements AuthService {
         }
         String token = tokenService.issueFor(user.getId());
         return new AuthResult(token, user.getId());
+    }
+
+    /**
+     * Canonical form of a username: trimmed and lower-cased. Applied on register and login
+     * so that "Alice", "alice " and "ALICE" designate the same account (H2 compares
+     * case-sensitively, which would otherwise allow confusing duplicates).
+     */
+    private static String normalizeUsername(String username) {
+        return username.trim().toLowerCase(Locale.ROOT);
     }
 }
