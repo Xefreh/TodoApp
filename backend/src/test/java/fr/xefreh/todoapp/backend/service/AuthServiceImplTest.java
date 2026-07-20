@@ -77,6 +77,49 @@ class AuthServiceImplTest {
     }
 
     @Test
+    void register_acceptsPasswordOfExactlyMinLength() {
+        when(userRepository.findByUsername("alice")).thenReturn(null);
+        when(passwordHasher.hash("123456")).thenReturn("hashed-pw");
+        when(userRepository.save(any(UserEntity.class))).thenAnswer(inv -> {
+            UserEntity u = inv.getArgument(0);
+            u.setId(1L);
+            return u;
+        });
+        when(tokenService.issueFor(1L)).thenReturn("jwt-1");
+
+        // Boundary: exactly MIN_PASSWORD_LENGTH characters must be accepted.
+        AuthResult result = authService.register("alice", "123456");
+
+        assertEquals("jwt-1", result.token());
+    }
+
+    @Test
+    void register_translatesConcurrentDuplicateIntoUsernameTaken() {
+        // TOCTOU race: the username is free at check-time but taken by the time save runs
+        // (unique constraint violation) -> the re-check finds it and yields a 409.
+        when(userRepository.findByUsername("alice"))
+                .thenReturn(null, new UserEntity("alice", "other-hash"));
+        when(passwordHasher.hash("s3cret")).thenReturn("hashed-pw");
+        when(userRepository.save(any(UserEntity.class)))
+                .thenThrow(new RuntimeException("unique constraint violation"));
+
+        assertThrows(UsernameTakenException.class, () -> authService.register("alice", "s3cret"));
+    }
+
+    @Test
+    void register_rethrowsOriginalErrorWhenSaveFailsForOtherReasons() {
+        // If the username is still absent after the save failure, it was NOT a duplicate
+        // race: the original exception must propagate (e.g. database down).
+        when(userRepository.findByUsername("alice")).thenReturn(null);
+        when(passwordHasher.hash("s3cret")).thenReturn("hashed-pw");
+        when(userRepository.save(any(UserEntity.class))).thenThrow(new RuntimeException("db down"));
+
+        RuntimeException e = assertThrows(RuntimeException.class,
+                () -> authService.register("alice", "s3cret"));
+        assertEquals("db down", e.getMessage());
+    }
+
+    @Test
     void login_succeedsWhenPasswordMatches() {
         UserEntity stored = new UserEntity("alice", "hashed-pw");
         stored.setId(7L);
