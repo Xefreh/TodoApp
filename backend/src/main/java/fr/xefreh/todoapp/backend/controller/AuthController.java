@@ -6,6 +6,7 @@ import fr.xefreh.todoapp.backend.service.AuthResult;
 import fr.xefreh.todoapp.backend.service.AuthService;
 import fr.xefreh.todoapp.backend.service.InvalidCredentialsException;
 import fr.xefreh.todoapp.backend.service.UsernameTakenException;
+import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
 import org.jetbrains.annotations.NotNull;
@@ -55,12 +56,26 @@ public final class AuthController {
         }
     };
 
+    /**
+     * Parses and validates the credentials body. Throws {@link BadRequestResponse} (400) on
+     * missing/malformed JSON or blank fields — interrupting the chain instead of letting the
+     * handler run with invalid input (which previously ended in a 500).
+     *
+     * <p>Note: catches {@link Exception} and not just {@link RuntimeException}: Javalin is
+     * written in Kotlin, which does not enforce checked exceptions — Jackson's
+     * {@code JsonProcessingException} (an {@code IOException}) escapes {@code bodyAsClass}
+     * undeclared.</p>
+     */
     private static CredentialsDto parseCredentials(Context ctx) {
-        CredentialsDto credentials = ctx.bodyAsClass(CredentialsDto.class);
-        if (credentials.username == null || credentials.username.isBlank()
+        CredentialsDto credentials;
+        try {
+            credentials = ctx.bodyAsClass(CredentialsDto.class);
+        } catch (Exception e) {
+            throw new BadRequestResponse("Request body must be a JSON credentials object");
+        }
+        if (credentials == null || credentials.username == null || credentials.username.isBlank()
                 || credentials.password == null || credentials.password.isBlank()) {
-            ctx.status(400).json(new ErrorBody("BAD_REQUEST", "username and password are required"));
-            return new CredentialsDto();
+            throw new BadRequestResponse("username and password are required");
         }
         return credentials;
     }

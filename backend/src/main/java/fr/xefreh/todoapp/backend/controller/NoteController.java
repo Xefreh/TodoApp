@@ -4,6 +4,7 @@ import fr.xefreh.todoapp.backend.dto.NoteDto;
 import fr.xefreh.todoapp.backend.security.AuthFilter;
 import fr.xefreh.todoapp.backend.service.NoteNotFoundException;
 import fr.xefreh.todoapp.backend.service.NoteService;
+import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
 import java.util.List;
@@ -51,11 +52,7 @@ public final class NoteController {
     public final Handler CreateNote = new Handler() {
         @Override
         public void handle(@NotNull Context ctx) {
-            NoteDto input = ctx.bodyAsClass(NoteDto.class);
-            if (input == null || input.title == null || input.title.isBlank()) {
-                ctx.status(400).json(new ErrorBody("BAD_REQUEST", "title is required"));
-                return;
-            }
+            NoteDto input = parseNote(ctx);
             NoteDto created = noteService.create(ownerId(ctx), input);
             ctx.status(201).json(created);
         }
@@ -79,11 +76,7 @@ public final class NoteController {
         @Override
         public void handle(@NotNull Context ctx) {
             long id = ctx.pathParamAsClass("id", Long.class).get();
-            NoteDto input = ctx.bodyAsClass(NoteDto.class);
-            if (input == null || input.title == null || input.title.isBlank()) {
-                ctx.status(400).json(new ErrorBody("BAD_REQUEST", "title is required"));
-                return;
-            }
+            NoteDto input = parseNote(ctx);
             try {
                 ctx.json(noteService.update(id, ownerId(ctx), input));
             } catch (NoteNotFoundException e) {
@@ -105,6 +98,29 @@ public final class NoteController {
             }
         }
     };
+
+    /**
+     * Parses and validates the note body. Throws {@link BadRequestResponse} (400) on
+     * missing/malformed JSON or a blank title — {@code bodyAsClass} throws on an empty body,
+     * so a plain null-check is never enough (it previously ended in a 500).
+     *
+     * <p>Note: catches {@link Exception} and not just {@link RuntimeException}: Javalin is
+     * written in Kotlin, which does not enforce checked exceptions — Jackson's
+     * {@code JsonProcessingException} (an {@code IOException}) escapes {@code bodyAsClass}
+     * undeclared.</p>
+     */
+    private static NoteDto parseNote(Context ctx) {
+        NoteDto input;
+        try {
+            input = ctx.bodyAsClass(NoteDto.class);
+        } catch (Exception e) {
+            throw new BadRequestResponse("Request body must be a JSON note object");
+        }
+        if (input == null || input.title == null || input.title.isBlank()) {
+            throw new BadRequestResponse("title is required");
+        }
+        return input;
+    }
 
     /** Standard JSON error body. */
     public record ErrorBody(String error, String message) {
