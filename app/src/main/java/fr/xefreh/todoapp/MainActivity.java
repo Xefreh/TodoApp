@@ -205,6 +205,13 @@ public class MainActivity extends AppCompatActivity {
 		isOpeningNotes = false;
 	}
 
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		// The executor's thread is non-daemon: release it with the activity (rotations leaked it).
+		executorService.shutdown();
+	}
+
 	private void openNotes() {
 		if (isOpeningNotes) {
 			return;

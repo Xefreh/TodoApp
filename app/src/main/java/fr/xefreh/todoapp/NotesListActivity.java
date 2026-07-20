@@ -122,6 +122,13 @@ public class NotesListActivity extends AppCompatActivity {
 		return super.dispatchTouchEvent(event);
 	}
 
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		// The executor's thread is non-daemon: release it with the activity (rotations leaked it).
+		executorService.shutdown();
+	}
+
 	private void returnToEditor() {
 		if (isReturningToEditor) {
 			return;
