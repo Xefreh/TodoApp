@@ -79,6 +79,12 @@ public final class Main {
                 ctx.status(404);
                 ctx.json(new ErrorBody("NOT_FOUND", e.getMessage()));
             });
+            // Javalin validation failures (e.g. non-numeric path param) use their own JSON
+            // format by default — wrap them in the standard error body for uniformity.
+            config.routes.exception(io.javalin.validation.ValidationException.class, (e, ctx) -> {
+                ctx.status(400);
+                ctx.json(new ErrorBody("BAD_REQUEST", "Invalid request parameter"));
+            });
             // HttpResponseException (BadRequestResponse, UnauthorizedResponse, etc.):
             // honors the carried status.
             config.routes.exception(io.javalin.http.HttpResponseException.class, (e, ctx) -> {
