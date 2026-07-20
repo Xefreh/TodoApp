@@ -12,6 +12,7 @@
 **/build
 /captures
 /backend/data
+/data
 .externalNativeBuild
 .cxx
 local.properties

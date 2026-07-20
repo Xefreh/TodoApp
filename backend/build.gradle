@@ -37,4 +37,8 @@ test {
 // Start the server in development mode from the root: ./gradlew :backend:run
 run {
     standardInput = System.in
+    // Pin the working directory: the H2 JDBC url is relative (jdbc:h2:file:./data/...),
+    // so the database must always land in backend/data regardless of how the JVM is
+    // launched (Gradle, IDE run config, ...). It already leaked to a root-level data/ once.
+    workingDir = projectDir
 }
