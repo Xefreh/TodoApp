@@ -3,7 +3,6 @@ package fr.xefreh.todoapp.data;
 import androidx.annotation.NonNull;
 
 import fr.xefreh.todoapp.Note;
-import fr.xefreh.todoapp.NoteDao;
 import fr.xefreh.todoapp.data.dto.NoteDto;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,8 +11,8 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 /**
- * Implementation of {@link NotesRepository} orchestrating {@link TodoApi} (network) and the
- * Room cache via {@link NoteDao}.
+ * Implementation of {@link NotesRepository} backed by {@link TodoApi} (network only — the
+ * server is the source of truth, nothing is cached locally).
  *
  * <p>The {@code authHeader} ("Bearer &lt;token&gt;") is passed explicitly to each call even
  * though the OkHttp {@code AuthInterceptor} already injects it: this makes the implementation
@@ -25,12 +24,10 @@ import retrofit2.Response;
 public class NotesRepositoryImpl implements NotesRepository {
 
     private final TodoApi api;
-    private final NoteDao noteDao;
     private final SessionManager sessionManager;
 
-    public NotesRepositoryImpl(TodoApi api, NoteDao noteDao, SessionManager sessionManager) {
+    public NotesRepositoryImpl(TodoApi api, SessionManager sessionManager) {
         this.api = api;
-        this.noteDao = noteDao;
         this.sessionManager = sessionManager;
     }
 
@@ -40,12 +37,7 @@ public class NotesRepositoryImpl implements NotesRepository {
         List<NoteDto> dtos = execute(api.getNotes(auth));
         List<Note> notes = new ArrayList<>();
         for (NoteDto dto : dtos) {
-            notes.add(toEntity(dto));
-        }
-        // Replaces the local cache: clear then insert (synchronous DAO).
-        noteDao.clear();
-        for (Note n : notes) {
-            noteDao.insert(n);
+            notes.add(toNote(dto));
         }
         return notes;
     }
@@ -54,20 +46,13 @@ public class NotesRepositoryImpl implements NotesRepository {
     public Note create(String title, String body, String imageUri) {
         String auth = requireAuthHeader();
         NoteDto payload = new NoteDto(title, body, imageUri);
-        NoteDto created = execute(api.createNote(auth, payload));
-        Note entity = toEntity(created);
-        noteDao.insert(entity);
-        return entity;
+        return toNote(execute(api.createNote(auth, payload)));
     }
 
     @Override
     public void update(@NonNull Note note) {
         String auth = requireAuthHeader();
-        NoteDto payload = toDto(note);
-        NoteDto updated = execute(api.updateNote(auth, note.getId(), payload));
-        Note entity = toEntity(updated);
-        entity.setId(note.getId());
-        noteDao.insert(entity); // REPLACE on the same server PK
+        execute(api.updateNote(auth, note.getId(), toDto(note)));
     }
 
     @Override
@@ -83,7 +68,6 @@ public class NotesRepositoryImpl implements NotesRepository {
         if (!response.isSuccessful()) {
             throw new ApiException("HTTP " + response.code(), response.code());
         }
-        noteDao.deleteById(serverId);
     }
 
     // --- helpers ---
@@ -113,7 +97,7 @@ public class NotesRepositoryImpl implements NotesRepository {
         }
     }
 
-    private static Note toEntity(NoteDto dto) {
+    private static Note toNote(NoteDto dto) {
         long createdAt = dto.createdAt == null ? 0L : dto.createdAt;
         return new Note(dto.id, dto.title, dto.body, dto.imageUri, createdAt);
     }

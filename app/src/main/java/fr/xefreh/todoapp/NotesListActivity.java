@@ -6,12 +6,10 @@ import android.view.MotionEvent;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -19,11 +17,17 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import fr.xefreh.todoapp.data.ApiException;
+import fr.xefreh.todoapp.data.NotesRepository;
+import fr.xefreh.todoapp.data.NotesRepositoryImpl;
+import fr.xefreh.todoapp.data.SessionManager;
 import fr.xefreh.todoapp.ui.NotesListScreen;
 
 public class NotesListActivity extends AppCompatActivity {
 
-	private AppDatabase appDatabase;
+	private NotesListScreen screen;
+	private NotesViewModel viewModel;
+	private NotesRepository notesRepository;
 	private SwipeNavigationDetector swipeNavigationDetector;
 	private boolean isReturningToEditor;
 	private final ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -32,9 +36,12 @@ public class NotesListActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		EdgeToEdge.enable(this);
-		appDatabase = DatabaseProvider.getDatabase(this);
 
-		NotesListScreen screen = new NotesListScreen(this);
+		notesRepository = new NotesRepositoryImpl(
+				RetrofitProvider.getApi(),
+				new SessionManager(this));
+
+		screen = new NotesListScreen(this);
 		setContentView(screen.root);
 		swipeNavigationDetector = new SwipeNavigationDetector(
 				this,
@@ -55,43 +62,49 @@ public class NotesListActivity extends AppCompatActivity {
 			return false;
 		});
 
+		viewModel = new ViewModelProvider(this).get(NotesViewModel.class);
+		viewModel.getNotes().observe(this, this::setNotesAdapter);
 
-		NotesViewModel viewModel = new ViewModelProvider(this, new ViewModelProvider.Factory() {
-			@NonNull
-			@Override
-			public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-				return (T) new NotesViewModel(appDatabase);
-			}
-		}).get(NotesViewModel.class);
+		screen.syncButton.setOnClickListener(v -> refreshNotes(true));
+	}
 
-		viewModel.getNotes().observe(this, notes -> setNotesAdapter(notes, screen));
+	@Override
+	protected void onResume() {
+		super.onResume();
+		// The server is the source of truth: reload the list every time the screen is shown
+		// (first display, after creating a note, coming back to the screen).
+		refreshNotes(false);
+	}
 
-		screen.syncButton.setOnClickListener((v -> {
-			screen.syncButton.setEnabled(false);
-			executorService.execute(() -> {
-				fr.xefreh.todoapp.data.NotesRepository repo =
-						new fr.xefreh.todoapp.data.NotesRepositoryImpl(
-								RetrofitProvider.getApi(),
-								appDatabase.noteDao(),
-								new fr.xefreh.todoapp.data.SessionManager(this));
-				try {
-					java.util.List<Note> synced = repo.fetchAll();
-					runOnUiThread(() -> {
-						screen.syncButton.setEnabled(true);
+	/**
+	 * Fetches the notes from the server and publishes them to the ViewModel.
+	 *
+	 * @param manual true when triggered by the sync button (shows a success Toast); false
+	 *               for automatic refreshes (silent on success).
+	 */
+	private void refreshNotes(boolean manual) {
+		screen.syncButton.setEnabled(false);
+		executorService.execute(() -> {
+			try {
+				List<Note> synced = notesRepository.fetchAll();
+				runOnUiThread(() -> {
+					viewModel.setNotes(synced);
+					screen.syncButton.setEnabled(true);
+					if (manual) {
 						Toast.makeText(NotesListActivity.this,
 								"Synced " + synced.size() + " notes",
 								Toast.LENGTH_SHORT).show();
-					});
-				} catch (fr.xefreh.todoapp.data.ApiException e) {
-					runOnUiThread(() -> {
-						screen.syncButton.setEnabled(true);
-						Toast.makeText(NotesListActivity.this,
-								"Sync failed: " + e.getMessage(),
-								Toast.LENGTH_LONG).show();
-					});
-				}
-			});
-		}));
+					}
+				});
+			} catch (ApiException e) {
+				runOnUiThread(() -> {
+					screen.syncButton.setEnabled(true);
+					Toast.makeText(NotesListActivity.this,
+							"Sync failed: " + e.getMessage(),
+							Toast.LENGTH_LONG).show();
+				});
+			}
+		});
 	}
 
 	@Override
@@ -113,7 +126,7 @@ public class NotesListActivity extends AppCompatActivity {
 		finish();
 	}
 
-	private static void setNotesAdapter(List<Note> notes, NotesListScreen screen) {
+	private void setNotesAdapter(List<Note> notes) {
 		NotesAdapter notesAdapter = new NotesAdapter(notes);
 		screen.notesList.setAdapter(notesAdapter);
 	}

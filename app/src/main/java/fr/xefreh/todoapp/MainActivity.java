@@ -37,6 +37,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import fr.xefreh.todoapp.data.ApiException;
+import fr.xefreh.todoapp.data.NotesRepository;
+import fr.xefreh.todoapp.data.NotesRepositoryImpl;
+import fr.xefreh.todoapp.data.SessionManager;
 import fr.xefreh.todoapp.ui.MainScreen;
 
 public class MainActivity extends AppCompatActivity {
@@ -47,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
 	private SwipeNavigationDetector swipeNavigationDetector;
 	private boolean isOpeningNotes;
 	private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-	private fr.xefreh.todoapp.data.NotesRepository notesRepository;
+	private NotesRepository notesRepository;
 
 	private final ActivityResultLauncher<Uri> takePhotoLauncher = registerForActivityResult(new ActivityResultContracts.TakePicture(), wasSaved -> {
 		if (wasSaved) {
@@ -85,11 +89,9 @@ public class MainActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		EdgeToEdge.enable(this);
 
-		AppDatabase appDatabase = DatabaseProvider.getDatabase(this);
-		notesRepository = new fr.xefreh.todoapp.data.NotesRepositoryImpl(
+		notesRepository = new NotesRepositoryImpl(
 				RetrofitProvider.getApi(),
-				appDatabase.noteDao(),
-				new fr.xefreh.todoapp.data.SessionManager(this));
+				new SessionManager(this));
 
 		screen = new MainScreen(this);
 		setContentView(screen.root);
@@ -151,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
 						screen.saveButton.setEnabled(true);
 						startActivity(new Intent(MainActivity.this, NotesListActivity.class));
 					});
-				} catch (fr.xefreh.todoapp.data.ApiException e) {
+				} catch (ApiException e) {
 					runOnUiThread(() -> {
 						screen.saveButton.setEnabled(true);
 						Toast.makeText(MainActivity.this,

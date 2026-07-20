@@ -1,41 +1,27 @@
 package fr.xefreh.todoapp;
 
-import androidx.room.Entity;
-import androidx.room.Ignore;
-import androidx.room.PrimaryKey;
-
 /**
- * Note persisted locally as a cache of the REST API.
+ * Note model.
  *
- * <p>Since the switch to the REST API, {@code id} is the **server** identifier (no more
- * local auto-generation): notes are created on the server, then inserted locally with the
- * received id. {@code createdAt} is still set by the server.</p>
+ * <p>Since the switch to the REST API, {@code id} is the <b>server</b> identifier: notes are
+ * created on the server, which assigns the id and {@code createdAt}. The server is the only
+ * source of truth — there is no local persistence.</p>
  *
- * <p>{@code title}, {@code body}, {@code imageUri} are now mutable to allow local updates
- * after a server PUT.</p>
+ * <p>{@code title}, {@code body}, {@code imageUri} are mutable to allow updates (PUT).</p>
  */
-@Entity(tableName = "notes")
 public class Note {
-    @PrimaryKey
     private Long id;
     private String title;
     private String body;
     private String imageUri;
     private long createdAt;
 
-    /** Required Room constructor. */
     public Note(Long id, String title, String body, String imageUri, long createdAt) {
         this.id = id;
         this.title = title;
         this.body = body;
         this.imageUri = imageUri;
         this.createdAt = createdAt;
-    }
-
-    /** Builds a local note ready to be sent to the server (id and createdAt assigned by the API). */
-    @Ignore
-    public Note(String title, String body, String imageUri) {
-        this(null, title, body, imageUri, 0L);
     }
 
     public Long getId() {
