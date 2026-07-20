@@ -63,7 +63,9 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void submit() {
-        String username = textOf(screen.usernameInput);
+        String username = textOf(screen.usernameInput).trim();
+        // Passwords are NOT trimmed: a password with leading/trailing spaces is legitimate
+        // and the backend verifies it verbatim (trimming would make such accounts unusable).
         String password = textOf(screen.passwordInput);
 
         if (username.isEmpty()) {
@@ -136,6 +138,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private static String textOf(android.widget.EditText field) {
-        return field.getText() == null ? "" : field.getText().toString().trim();
+        return field.getText() == null ? "" : field.getText().toString();
     }
 }
