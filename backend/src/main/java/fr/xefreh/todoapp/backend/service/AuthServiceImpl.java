@@ -29,7 +29,18 @@ public class AuthServiceImpl implements AuthService {
             throw new UsernameTakenException(username);
         }
         String hash = passwordHasher.hash(password);
-        UserEntity saved = userRepository.save(new UserEntity(username, hash));
+        UserEntity saved;
+        try {
+            saved = userRepository.save(new UserEntity(username, hash));
+        } catch (RuntimeException e) {
+            // TOCTOU race: a concurrent request inserted the same username between the check
+            // above and this insert, and the unique constraint rejected it. If the username
+            // now exists, translate the failure into the expected 409; otherwise rethrow.
+            if (userRepository.findByUsername(username) != null) {
+                throw new UsernameTakenException(username);
+            }
+            throw e;
+        }
         String token = tokenService.issueFor(saved.getId());
         return new AuthResult(token, saved.getId());
     }
