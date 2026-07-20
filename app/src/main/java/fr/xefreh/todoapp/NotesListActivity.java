@@ -96,10 +96,13 @@ public class NotesListActivity extends AppCompatActivity {
 								Toast.LENGTH_SHORT).show();
 					}
 				});
-			} catch (ApiException e) {
+			} catch (Exception e) {
+				// Catch-all (symmetric with MainActivity's save handler): the sync button
+				// must always be re-enabled and the user informed, whatever the failure.
 				runOnUiThread(() -> {
 					screen.syncButton.setEnabled(true);
-					if (e.getHttpCode() == 401) {
+					if (e instanceof ApiException apiException
+							&& apiException.getHttpCode() == 401) {
 						redirectToLogin();
 						return;
 					}
