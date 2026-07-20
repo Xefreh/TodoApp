@@ -3,6 +3,7 @@ package fr.xefreh.todoapp.backend;
 import fr.xefreh.todoapp.backend.config.JpaConfig;
 import fr.xefreh.todoapp.backend.controller.AuthController;
 import fr.xefreh.todoapp.backend.controller.NoteController;
+import fr.xefreh.todoapp.backend.dto.ErrorBody;
 import fr.xefreh.todoapp.backend.repository.JpaNoteRepository;
 import fr.xefreh.todoapp.backend.repository.JpaUserRepository;
 import fr.xefreh.todoapp.backend.security.AuthFilter;
@@ -10,6 +11,7 @@ import fr.xefreh.todoapp.backend.service.Argon2PasswordHasher;
 import fr.xefreh.todoapp.backend.service.AuthException;
 import fr.xefreh.todoapp.backend.service.AuthServiceImpl;
 import fr.xefreh.todoapp.backend.service.JwtTokenService;
+import fr.xefreh.todoapp.backend.service.NoteNotFoundException;
 import fr.xefreh.todoapp.backend.service.NoteServiceImpl;
 import fr.xefreh.todoapp.backend.service.PasswordHasher;
 import fr.xefreh.todoapp.backend.service.TokenService;
@@ -67,19 +69,25 @@ public final class Main {
             config.routes.put("/api/notes/{id}", noteController.UpdateNote);
             config.routes.delete("/api/notes/{id}", noteController.DeleteNote);
 
-            // Uniform error handling.
+            // Uniform error handling: domain exceptions carry their HTTP status and
+            // symbolic error name; controllers let them bubble up to these handlers.
             config.routes.exception(AuthException.class, (e, ctx) -> {
-                ctx.status(400);
-                ctx.json(new ErrorResponse("AUTH_ERROR", e.getMessage()));
+                ctx.status(e.httpStatus());
+                ctx.json(new ErrorBody(e.errorName(), e.getMessage()));
             });
-            // HttpResponseException (UnauthorizedResponse, etc.): honors the carried status.
+            config.routes.exception(NoteNotFoundException.class, (e, ctx) -> {
+                ctx.status(404);
+                ctx.json(new ErrorBody("NOT_FOUND", e.getMessage()));
+            });
+            // HttpResponseException (BadRequestResponse, UnauthorizedResponse, etc.):
+            // honors the carried status.
             config.routes.exception(io.javalin.http.HttpResponseException.class, (e, ctx) -> {
                 ctx.status(e.getStatus());
-                ctx.json(new ErrorResponse(httpErrorName(e.getStatus()), e.getMessage()));
+                ctx.json(new ErrorBody(httpErrorName(e.getStatus()), e.getMessage()));
             });
             config.routes.exception(Exception.class, (e, ctx) -> {
                 ctx.status(500);
-                ctx.json(new ErrorResponse("INTERNAL_ERROR", e.getMessage()));
+                ctx.json(new ErrorBody("INTERNAL_ERROR", e.getMessage()));
             });
         }).start(PORT);
 
@@ -90,10 +98,6 @@ public final class Main {
 
     /** Response body of the health probe. */
     public record HealthResponse(String status) {
-    }
-
-    /** Standard JSON error body. */
-    public record ErrorResponse(String error, String message) {
     }
 
     /** Symbolic error name derived from the HTTP status (401 -> UNAUTHORIZED, ...). */

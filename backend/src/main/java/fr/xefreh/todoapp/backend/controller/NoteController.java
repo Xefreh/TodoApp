@@ -2,7 +2,6 @@ package fr.xefreh.todoapp.backend.controller;
 
 import fr.xefreh.todoapp.backend.dto.NoteDto;
 import fr.xefreh.todoapp.backend.security.AuthFilter;
-import fr.xefreh.todoapp.backend.service.NoteNotFoundException;
 import fr.xefreh.todoapp.backend.service.NoteService;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
@@ -21,6 +20,9 @@ import org.jetbrains.annotations.NotNull;
  *   <li>{@link #UpdateNote}  {@code PUT    /api/notes/{id}}</li>
  *   <li>{@link #DeleteNote}  {@code DELETE /api/notes/{id}}</li>
  * </ul>
+ *
+ * {@code NoteNotFoundException} bubbles up to the exception handler in {@code Main},
+ * which translates it into a 404.
  */
 public final class NoteController {
 
@@ -63,11 +65,7 @@ public final class NoteController {
         @Override
         public void handle(@NotNull Context ctx) {
             long id = ctx.pathParamAsClass("id", Long.class).get();
-            try {
-                ctx.json(noteService.getForOwner(id, ownerId(ctx)));
-            } catch (NoteNotFoundException e) {
-                ctx.status(404).json(new ErrorBody("NOT_FOUND", e.getMessage()));
-            }
+            ctx.json(noteService.getForOwner(id, ownerId(ctx)));
         }
     };
 
@@ -77,11 +75,7 @@ public final class NoteController {
         public void handle(@NotNull Context ctx) {
             long id = ctx.pathParamAsClass("id", Long.class).get();
             NoteDto input = parseNote(ctx);
-            try {
-                ctx.json(noteService.update(id, ownerId(ctx), input));
-            } catch (NoteNotFoundException e) {
-                ctx.status(404).json(new ErrorBody("NOT_FOUND", e.getMessage()));
-            }
+            ctx.json(noteService.update(id, ownerId(ctx), input));
         }
     };
 
@@ -90,12 +84,8 @@ public final class NoteController {
         @Override
         public void handle(@NotNull Context ctx) {
             long id = ctx.pathParamAsClass("id", Long.class).get();
-            try {
-                noteService.delete(id, ownerId(ctx));
-                ctx.status(204);
-            } catch (NoteNotFoundException e) {
-                ctx.status(404).json(new ErrorBody("NOT_FOUND", e.getMessage()));
-            }
+            noteService.delete(id, ownerId(ctx));
+            ctx.status(204);
         }
     };
 
@@ -120,9 +110,5 @@ public final class NoteController {
             throw new BadRequestResponse("title is required");
         }
         return input;
-    }
-
-    /** Standard JSON error body. */
-    public record ErrorBody(String error, String message) {
     }
 }

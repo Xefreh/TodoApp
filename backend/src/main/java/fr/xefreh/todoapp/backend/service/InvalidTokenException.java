@@ -6,6 +6,6 @@ package fr.xefreh.todoapp.backend.service;
  */
 public class InvalidTokenException extends AuthException {
     public InvalidTokenException(String message) {
-        super(message);
+        super(401, "UNAUTHORIZED", message);
     }
 }
