@@ -1,8 +1,12 @@
 [versions]
-agp = "9.2.1"
+agp = "9.3.0"
 converterGson = "3.0.0"
+okhttp = "4.12.0"
 glide = "5.0.9"
 junit = "4.13.2"
+junitJupiter = "5.12.2"
+junitPlatform = "1.12.2"
+mockito = "5.18.0"
 junitVersion = "1.1.5"
 espressoCore = "3.5.1"
 appcompat = "1.6.1"
@@ -10,12 +14,23 @@ lifecycleLivedata = "2.11.0"
 material = "1.10.0"
 activityKtx = "1.8.0"
 constraintlayout = "2.1.4"
-roomRuntime = "2.8.4"
+javalin = "7.2.1"
+hibernateCore = "6.6.18.Final"
+jakartaPersistence = "3.2.0"
+h2 = "2.3.232"
+jjwt = "0.12.6"
+argon2 = "2.12"
+slf4jSimple = "2.0.17"
 
 [libraries]
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
+logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
+junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junitPlatform" }
+mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
+mockito-junit-jupiter = { group = "org.mockito", name = "mockito-junit-jupiter", version.ref = "mockito" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
@@ -25,8 +40,16 @@ material = { group = "com.google.android.material", name = "material", version.r
 activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtx" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "converterGson" }
-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
+javalin-bundle = { group = "io.javalin", name = "javalin-bundle", version.ref = "javalin" }
+javalin-testtools = { group = "io.javalin", name = "javalin-testtools", version.ref = "javalin" }
+hibernate-core = { group = "org.hibernate.orm", name = "hibernate-core", version.ref = "hibernateCore" }
+jakarta-persistence-api = { group = "jakarta.persistence", name = "jakarta.persistence-api", version.ref = "jakartaPersistence" }
+h2 = { group = "com.h2database", name = "h2", version.ref = "h2" }
+jjwt-api = { group = "io.jsonwebtoken", name = "jjwt-api", version.ref = "jjwt" }
+jjwt-impl = { group = "io.jsonwebtoken", name = "jjwt-impl", version.ref = "jjwt" }
+jjwt-jackson = { group = "io.jsonwebtoken", name = "jjwt-jackson", version.ref = "jjwt" }
+argon2-jvm = { group = "de.mkammerer", name = "argon2-jvm", version.ref = "argon2" }
+slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4jSimple" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

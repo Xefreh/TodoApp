@@ -37,9 +37,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import fr.xefreh.todoapp.data.ApiException;
+import fr.xefreh.todoapp.data.NotesRepository;
+import fr.xefreh.todoapp.data.NotesRepositoryImpl;
+import fr.xefreh.todoapp.data.SessionManager;
 import fr.xefreh.todoapp.ui.MainScreen;
 
 public class MainActivity extends AppCompatActivity {
+
+	private static final String STATE_PHOTO_PATH = "state_photo_path";
 
 	private MainScreen screen;
 	private File photoFile;
@@ -47,14 +53,15 @@ public class MainActivity extends AppCompatActivity {
 	private SwipeNavigationDetector swipeNavigationDetector;
 	private boolean isOpeningNotes;
 	private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+	private NotesRepository notesRepository;
 
 	private final ActivityResultLauncher<Uri> takePhotoLauncher = registerForActivityResult(new ActivityResultContracts.TakePicture(), wasSaved -> {
 		if (wasSaved) {
 			screen.photoCard.setVisibility(View.VISIBLE);
 			Glide.with(this).load(photoUri).centerCrop().into(screen.photoPreview);
-			Toast.makeText(MainActivity.this, "Photo saved to " + photoFile.getPath(), Toast.LENGTH_LONG).show();
+			Toast.makeText(MainActivity.this, getString(R.string.photo_saved_to, photoFile.getPath()), Toast.LENGTH_LONG).show();
 		} else {
-			Toast.makeText(MainActivity.this, "Could not save photo", Toast.LENGTH_SHORT).show();
+			Toast.makeText(MainActivity.this, R.string.photo_save_failed, Toast.LENGTH_SHORT).show();
 		}
 	});
 
@@ -64,17 +71,20 @@ public class MainActivity extends AppCompatActivity {
 		} else {
 			boolean shouldShow = shouldShowRequestPermissionRationale(Manifest.permission.CAMERA);
 			if (shouldShow) {
-				new AlertDialog.Builder(this).setTitle("Camera access needed").setMessage("This lets you attach a photo directly to your notes. Without it, you can still add photos from your gallery.").setPositiveButton("Try Again", (dialog, which) -> MainActivity.this.requestPermissionLauncher.launch(Manifest.permission.CAMERA)).setNegativeButton("Cancel", null).show();
+				new AlertDialog.Builder(this)
+						.setTitle(R.string.camera_access_needed_title)
+						.setMessage(R.string.camera_access_rationale)
+						.setPositiveButton(R.string.action_try_again, (dialog, which) -> MainActivity.this.requestPermissionLauncher.launch(Manifest.permission.CAMERA))
+						.setNegativeButton(R.string.action_cancel, null)
+						.show();
 			} else {
-				Toast.makeText(MainActivity.this, "Camera permission is disabled. Enable it in Settings", Toast.LENGTH_SHORT).show();
+				Toast.makeText(MainActivity.this, R.string.camera_permission_disabled, Toast.LENGTH_SHORT).show();
 			}
 		}
 	});
 
 	private final ActivityResultLauncher<PickVisualMediaRequest> pickImageLauncher = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
 		if (uri != null) {
-			screen.photoCard.setVisibility(View.VISIBLE);
-			Glide.with(this).load(uri).centerCrop().into(screen.photoPreview);
 			importPickedImage(uri);
 		}
 	});
@@ -84,8 +94,24 @@ public class MainActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		EdgeToEdge.enable(this);
 
+		notesRepository = new NotesRepositoryImpl(
+				RetrofitProvider.getApi(),
+				new SessionManager(this));
+
 		screen = new MainScreen(this);
 		setContentView(screen.root);
+
+		// Restore a previously attached photo after a configuration change (rotation).
+		if (savedInstanceState != null) {
+			String photoPath = savedInstanceState.getString(STATE_PHOTO_PATH);
+			if (photoPath != null) {
+				photoFile = new File(photoPath);
+				photoUri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", photoFile);
+				screen.photoCard.setVisibility(View.VISIBLE);
+				Glide.with(this).load(photoUri).centerCrop().into(screen.photoPreview);
+			}
+		}
+
 		swipeNavigationDetector = new SwipeNavigationDetector(
 				this,
 				SwipeNavigationDetector.Direction.LEFT,
@@ -133,37 +159,61 @@ public class MainActivity extends AppCompatActivity {
 				return;
 			}
 
-			AppDatabase appDatabase = DatabaseProvider.getDatabase(this);
+			screen.saveButton.setEnabled(false);
 			// Read photoUri inside the task: the single-threaded executor guarantees a
 			// pending gallery-image copy submitted earlier has finished by then.
 			executorService.execute(() -> {
+				// Known limitation: imageUri is a device-local content URI (FileProvider),
+				// not a server-hosted file — photos never leave this device and are broken
+				// for any other client. A real fix requires an upload endpoint (out of scope).
 				String imageUri = photoUri != null ? photoUri.toString() : null;
-				appDatabase.noteDao().insert(new Note(title, body, imageUri));
-
-				Intent intent = new Intent(MainActivity.this, NotesListActivity.class);
-				startActivity(intent);
+				try {
+					notesRepository.create(title, body, imageUri);
+					runOnUiThread(() -> {
+						screen.saveButton.setEnabled(true);
+						startActivity(new Intent(MainActivity.this, NotesListActivity.class));
+					});
+				} catch (Exception e) {
+					// Catch-all: the save button must always be re-enabled, whatever the
+					// failure (ApiException, but also any unexpected RuntimeException).
+					runOnUiThread(() -> {
+						screen.saveButton.setEnabled(true);
+						if (e instanceof ApiException apiException
+								&& apiException.getHttpCode() == 401) {
+							redirectToLogin();
+							return;
+						}
+						Toast.makeText(MainActivity.this,
+								getString(R.string.save_failed, e.getMessage()),
+								Toast.LENGTH_LONG).show();
+					});
+				}
 			});
 		});
 
 		screen.attachPhotoButton.setOnClickListener((v -> {
-			new AlertDialog.Builder(this).setTitle("Add Photo").setItems(new String[]{"Take Photo", "Choose from Gallery"}, (dialog, which) -> {
-				if (which == 0) {
-					boolean hasCamera = getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY);
+			new AlertDialog.Builder(this)
+					.setTitle(R.string.add_photo_title)
+					.setItems(new String[]{
+							getString(R.string.action_take_photo),
+							getString(R.string.action_choose_from_gallery)}, (dialog, which) -> {
+						if (which == 0) {
+							boolean hasCamera = getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY);
 
-					if (!hasCamera) {
-						Toast.makeText(MainActivity.this, "Device has no camera", Toast.LENGTH_SHORT).show();
-						return;
-					}
+							if (!hasCamera) {
+								Toast.makeText(MainActivity.this, R.string.device_has_no_camera, Toast.LENGTH_SHORT).show();
+								return;
+							}
 
-					if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-						launchCamera();
-					} else {
-						requestPermissionLauncher.launch(Manifest.permission.CAMERA);
-					}
-				} else {
-					pickImageLauncher.launch(new PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE).build());
-				}
-			}).show();
+							if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+								launchCamera();
+							} else {
+								requestPermissionLauncher.launch(Manifest.permission.CAMERA);
+							}
+						} else {
+							pickImageLauncher.launch(new PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE).build());
+						}
+					}).show();
 		}));
 	}
 
@@ -176,9 +226,24 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	@Override
+	protected void onSaveInstanceState(@androidx.annotation.NonNull Bundle outState) {
+		super.onSaveInstanceState(outState);
+		if (photoFile != null) {
+			outState.putString(STATE_PHOTO_PATH, photoFile.getAbsolutePath());
+		}
+	}
+
+	@Override
 	protected void onResume() {
 		super.onResume();
 		isOpeningNotes = false;
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		// The executor's thread is non-daemon: release it with the activity (rotations leaked it).
+		executorService.shutdown();
 	}
 
 	private void openNotes() {
@@ -187,6 +252,14 @@ public class MainActivity extends AppCompatActivity {
 		}
 		isOpeningNotes = true;
 		startActivity(new Intent(this, NotesListActivity.class));
+	}
+
+	/** The session expired or was revoked: back to the login screen, clearing the task. */
+	private void redirectToLogin() {
+		Intent intent = new Intent(this, LoginActivity.class);
+		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+		startActivity(intent);
+		finish();
 	}
 
 	private void launchCamera() {
@@ -203,11 +276,23 @@ public class MainActivity extends AppCompatActivity {
 					throw new IOException("Could not open " + sourceUri);
 				}
 				Files.copy(in, destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				Uri importedUri = FileProvider.getUriForFile(MainActivity.this, getPackageName() + ".fileprovider", destFile);
 				photoFile = destFile;
-				photoUri = FileProvider.getUriForFile(MainActivity.this, getPackageName() + ".fileprovider", destFile);
+				photoUri = importedUri;
+				// Preview only now: what the user sees always matches what will be saved.
+				runOnUiThread(() -> {
+					screen.photoCard.setVisibility(View.VISIBLE);
+					Glide.with(this).load(importedUri).centerCrop().into(screen.photoPreview);
+				});
 			} catch (IOException e) {
 				Log.e("MainActivity", "Could not import picked image", e);
-				runOnUiThread(() -> Toast.makeText(MainActivity.this, "Could not import image", Toast.LENGTH_SHORT).show());
+				runOnUiThread(() -> {
+					// Clear any previous attachment: the hidden preview must not lie.
+					photoFile = null;
+					photoUri = null;
+					screen.photoCard.setVisibility(View.GONE);
+					Toast.makeText(MainActivity.this, R.string.image_import_failed, Toast.LENGTH_SHORT).show();
+				});
 			}
 		});
 	}

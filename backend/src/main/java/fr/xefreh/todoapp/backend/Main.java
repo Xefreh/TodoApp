@@ -1,0 +1,133 @@
+package fr.xefreh.todoapp.backend;
+
+import fr.xefreh.todoapp.backend.config.JpaConfig;
+import fr.xefreh.todoapp.backend.controller.AuthController;
+import fr.xefreh.todoapp.backend.controller.NoteController;
+import fr.xefreh.todoapp.backend.dto.ErrorBody;
+import fr.xefreh.todoapp.backend.repository.JpaNoteRepository;
+import fr.xefreh.todoapp.backend.repository.JpaUserRepository;
+import fr.xefreh.todoapp.backend.security.AuthFilter;
+import fr.xefreh.todoapp.backend.service.Argon2PasswordHasher;
+import fr.xefreh.todoapp.backend.service.AuthException;
+import fr.xefreh.todoapp.backend.service.AuthService;
+import fr.xefreh.todoapp.backend.service.AuthServiceImpl;
+import fr.xefreh.todoapp.backend.service.JwtTokenService;
+import fr.xefreh.todoapp.backend.service.NoteNotFoundException;
+import fr.xefreh.todoapp.backend.service.NoteService;
+import fr.xefreh.todoapp.backend.service.NoteServiceImpl;
+import fr.xefreh.todoapp.backend.service.PasswordHasher;
+import fr.xefreh.todoapp.backend.service.TokenService;
+import io.javalin.Javalin;
+
+/**
+ * Entry point of the Javalin REST server.
+ *
+ * Bootstraps persistence (Hibernate + H2) and authentication (JWT + argon2id).
+ *
+ * Startup: {@code ./gradlew :backend:run} — listens on port 7000 (all interfaces).
+ * From the Android emulator: {@code http://10.0.2.2:7000}.
+ */
+public final class Main {
+
+    /** Server listen port. {@code 10.0.2.2:7000} from the Android emulator. */
+    public static final int PORT = 7000;
+
+    private Main() {
+    }
+
+    public static void main(String[] args) {
+        // Initializes the EntityManagerFactory at startup (creates/updates the H2 schema).
+        JpaConfig.entityManagerFactory();
+
+        // --- Service wiring (manual dependency assembly) ---
+        PasswordHasher passwordHasher = new Argon2PasswordHasher();
+        TokenService tokenService = new JwtTokenService();
+        AuthService authService = new AuthServiceImpl(
+                new JpaUserRepository(), passwordHasher, tokenService);
+        NoteService noteService = new NoteServiceImpl(new JpaNoteRepository());
+
+        createApp(authService, noteService, tokenService).start(PORT);
+
+        Runtime.getRuntime().addShutdownHook(new Thread(JpaConfig::shutdown));
+
+        System.out.println("TodoApp backend started on http://0.0.0.0:" + PORT);
+    }
+
+    /**
+     * Builds the Javalin app (routes, auth filter, exception handlers) around the given
+     * services. Extracted from {@link #main} so tests can spin the full HTTP stack with
+     * mocked services (see ApiErrorContractTest).
+     */
+    public static Javalin createApp(AuthService authService, NoteService noteService,
+                                    TokenService tokenService) {
+        AuthController authController = new AuthController(authService);
+        NoteController noteController = new NoteController(noteService);
+
+        return Javalin.create(config -> {
+            // Permissive CORS in development (curl/browser tests from the host).
+            config.bundledPlugins.enableCors(cors -> cors.addRule(rule -> rule.anyHost()));
+
+            // Connectivity probe.
+            config.routes.get("/api/health", ctx -> ctx.json(new HealthResponse("ok")));
+
+            // Authentication routes (public).
+            config.routes.post("/api/auth/register", authController.Register);
+            config.routes.post("/api/auth/login", authController.Login);
+
+            // Protected routes: the filter validates the Bearer JWT and exposes the userId.
+            // Two patterns because "/api/notes/*" does not cover the exact "/api/notes".
+            AuthFilter authFilter = new AuthFilter(tokenService);
+            config.routes.before("/api/notes", authFilter);
+            config.routes.before("/api/notes/*", authFilter);
+            config.routes.get("/api/notes", noteController.ListNotes);
+            config.routes.post("/api/notes", noteController.CreateNote);
+            config.routes.get("/api/notes/{id}", noteController.GetNote);
+            config.routes.put("/api/notes/{id}", noteController.UpdateNote);
+            config.routes.delete("/api/notes/{id}", noteController.DeleteNote);
+
+            // Uniform error handling: domain exceptions carry their HTTP status and
+            // symbolic error name; controllers let them bubble up to these handlers.
+            config.routes.exception(AuthException.class, (e, ctx) -> {
+                ctx.status(e.httpStatus());
+                ctx.json(new ErrorBody(e.errorName(), e.getMessage()));
+            });
+            config.routes.exception(NoteNotFoundException.class, (e, ctx) -> {
+                ctx.status(404);
+                ctx.json(new ErrorBody("NOT_FOUND", e.getMessage()));
+            });
+            // Javalin validation failures (e.g. non-numeric path param) use their own JSON
+            // format by default — wrap them in the standard error body for uniformity.
+            config.routes.exception(io.javalin.validation.ValidationException.class, (e, ctx) -> {
+                ctx.status(400);
+                ctx.json(new ErrorBody("BAD_REQUEST", "Invalid request parameter"));
+            });
+            // HttpResponseException (BadRequestResponse, UnauthorizedResponse, etc.):
+            // honors the carried status.
+            config.routes.exception(io.javalin.http.HttpResponseException.class, (e, ctx) -> {
+                ctx.status(e.getStatus());
+                ctx.json(new ErrorBody(httpErrorName(e.getStatus()), e.getMessage()));
+            });
+            config.routes.exception(Exception.class, (e, ctx) -> {
+                ctx.status(500);
+                ctx.json(new ErrorBody("INTERNAL_ERROR", e.getMessage()));
+            });
+        });
+    }
+
+    /** Response body of the health probe. */
+    public record HealthResponse(String status) {
+    }
+
+    /** Symbolic error name derived from the HTTP status (401 -> UNAUTHORIZED, ...). */
+    private static String httpErrorName(int status) {
+        return switch (status) {
+            case 400 -> "BAD_REQUEST";
+            case 401 -> "UNAUTHORIZED";
+            case 403 -> "FORBIDDEN";
+            case 404 -> "NOT_FOUND";
+            case 409 -> "CONFLICT";
+            case 422 -> "UNPROCESSABLE";
+            default -> "HTTP_" + status;
+        };
+    }
+}

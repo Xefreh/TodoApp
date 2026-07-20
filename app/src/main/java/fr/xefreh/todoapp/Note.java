@@ -1,62 +1,66 @@
 package fr.xefreh.todoapp;
 
-import androidx.room.Entity;
-import androidx.room.Ignore;
-import androidx.room.PrimaryKey;
-
-@Entity(tableName = "notes")
+/**
+ * Note model.
+ *
+ * <p>Since the switch to the REST API, {@code id} is the <b>server</b> identifier: notes are
+ * created on the server, which assigns the id and {@code createdAt}. The server is the only
+ * source of truth — there is no local persistence.</p>
+ *
+ * <p>{@code title}, {@code body}, {@code imageUri} are mutable to allow updates (PUT).</p>
+ */
 public class Note {
-	@PrimaryKey(autoGenerate = true)
-	private Integer id;
-	private final String title;
-	private final String body;
-	private final String imageUri;
-	private final long createdAt;
+    private Long id;
+    private String title;
+    private String body;
+    private String imageUri;
+    private long createdAt;
 
-	@Ignore
-	public Note(String title, String body) {
-		this(null, title, body, null, System.currentTimeMillis());
-	}
+    public Note(Long id, String title, String body, String imageUri, long createdAt) {
+        this.id = id;
+        this.title = title;
+        this.body = body;
+        this.imageUri = imageUri;
+        this.createdAt = createdAt;
+    }
 
-	@Ignore
-	public Note(String title, String body, String imageUri) {
-		this(null, title, body, imageUri, System.currentTimeMillis());
-	}
+    public Long getId() {
+        return id;
+    }
 
-	@Ignore
-	public Note(Integer id, String title, String body) {
-		this(id, title, body, null, System.currentTimeMillis());
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public Note(Integer id, String title, String body, String imageUri, long createdAt) {
-		this.id = id;
-		this.title = title;
-		this.body = body;
-		this.imageUri = imageUri;
-		this.createdAt = createdAt;
-	}
+    public String getTitle() {
+        return title;
+    }
 
-	public Integer getId() {
-		return id;
-	}
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+    public String getBody() {
+        return body;
+    }
 
-	public String getTitle() {
-		return title;
-	}
+    public void setBody(String body) {
+        this.body = body;
+    }
 
-	public String getBody() {
-		return body;
-	}
+    public String getImageUri() {
+        return imageUri;
+    }
 
-	public String getImageUri() {
-		return imageUri;
-	}
+    public void setImageUri(String imageUri) {
+        this.imageUri = imageUri;
+    }
 
-	public long getCreatedAt() {
-		return createdAt;
-	}
+    public long getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(long createdAt) {
+        this.createdAt = createdAt;
+    }
 }

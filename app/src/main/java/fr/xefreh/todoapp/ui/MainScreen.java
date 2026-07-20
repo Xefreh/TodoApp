@@ -1,6 +1,7 @@
 package fr.xefreh.todoapp.ui;
 
 import android.content.Context;
+import android.text.InputFilter;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.View;
@@ -22,6 +23,11 @@ import com.google.android.material.textfield.TextInputLayout;
 import fr.xefreh.todoapp.R;
 
 public final class MainScreen {
+
+	/** Field limits enforced by the backend (NoteEntity columns) — fail early on the client. */
+	private static final int TITLE_MAX_LENGTH = 255;
+	private static final int BODY_MAX_LENGTH = 8192;
+
 	public final ConstraintLayout root;
 	public final TextInputLayout titleInputLayout;
 	public final TextInputEditText titleInput;
@@ -69,6 +75,7 @@ public final class MainScreen {
 		titleInputLayout.setHint(R.string.hint_title);
 		titleInput = new TextInputEditText(titleInputLayout.getContext());
 		titleInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+		titleInput.setFilters(new InputFilter[]{new InputFilter.LengthFilter(TITLE_MAX_LENGTH)});
 		titleInputLayout.addView(titleInput, matchWidthWrapHeight());
 		content.addView(titleInputLayout, matchWidthWrapHeight());
 
@@ -81,6 +88,7 @@ public final class MainScreen {
 				| InputType.TYPE_TEXT_FLAG_MULTI_LINE
 				| InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
 		bodyInput.setMinLines(6);
+		bodyInput.setFilters(new InputFilter[]{new InputFilter.LengthFilter(BODY_MAX_LENGTH)});
 		bodyInputLayout.addView(bodyInput, matchWidthWrapHeight());
 		LinearLayout.LayoutParams bodyParams = matchWidthWrapHeight();
 		bodyParams.topMargin = ViewUtils.dp(context, 12);
