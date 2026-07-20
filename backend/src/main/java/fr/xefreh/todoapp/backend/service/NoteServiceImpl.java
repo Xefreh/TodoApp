@@ -46,12 +46,13 @@ public class NoteServiceImpl implements NoteService {
 
     @Override
     public NoteDto update(long id, long ownerId, NoteDto input) {
-        NoteEntity entity = noteRepository.findByIdAndOwner(id, ownerId)
+        return noteRepository.updateFields(
+                        id, ownerId,
+                        input.title,
+                        input.body == null ? "" : input.body,
+                        input.imageUri)
+                .map(NoteServiceImpl::toDto)
                 .orElseThrow(() -> new NoteNotFoundException(id));
-        entity.setTitle(input.title);
-        entity.setBody(input.body == null ? "" : input.body);
-        entity.setImageUri(input.imageUri);
-        return toDto(noteRepository.save(entity));
     }
 
     @Override

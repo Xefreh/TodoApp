@@ -24,8 +24,15 @@ public interface NoteRepository {
      */
     NoteEntity create(NoteEntity note, Long ownerId);
 
-    /** Updates an existing note (the owner and id of {@code note} must be set). */
-    NoteEntity save(NoteEntity note);
+    /**
+     * Atomically updates the editable fields (title, body, imageUri) of a note owned by
+     * {@code ownerId}: the managed entity is fetched, mutated and flushed within a single
+     * transaction — no detached find-then-merge window where a concurrent delete could
+     * resurrect the row. {@code createdAt} and the owner are preserved.
+     *
+     * @return the updated note, or empty if it does not exist or is not owned
+     */
+    Optional<NoteEntity> updateFields(Long id, Long ownerId, String title, String body, String imageUri);
 
     /** Deletes a note by its id if it belongs to the owner. Returns true if deleted. */
     boolean deleteByIdAndOwner(Long id, Long ownerId);

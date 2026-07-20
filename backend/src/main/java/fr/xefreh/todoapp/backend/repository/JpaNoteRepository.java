@@ -66,13 +66,28 @@ public class JpaNoteRepository implements NoteRepository {
     }
 
     @Override
-    public NoteEntity save(NoteEntity note) {
+    public Optional<NoteEntity> updateFields(Long id, Long ownerId, String title, String body, String imageUri) {
         EntityManager em = JpaConfig.entityManagerFactory().createEntityManager();
         em.getTransaction().begin();
         try {
-            NoteEntity merged = em.merge(note);
+            // The entity is managed by this EntityManager: mutations are flushed at commit.
+            Optional<NoteEntity> found = em.createQuery(
+                            "SELECT n FROM NoteEntity n WHERE n.id = :id AND n.owner.id = :ownerId",
+                            NoteEntity.class)
+                    .setParameter("id", id)
+                    .setParameter("ownerId", ownerId)
+                    .getResultStream()
+                    .findFirst();
+            if (found.isEmpty()) {
+                em.getTransaction().rollback();
+                return Optional.empty();
+            }
+            NoteEntity entity = found.get();
+            entity.setTitle(title);
+            entity.setBody(body);
+            entity.setImageUri(imageUri);
             em.getTransaction().commit();
-            return merged;
+            return Optional.of(entity);
         } catch (RuntimeException e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();

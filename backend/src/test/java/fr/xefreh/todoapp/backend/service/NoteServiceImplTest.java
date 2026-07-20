@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -116,11 +115,13 @@ class NoteServiceImplTest {
     }
 
     @Test
-    void update_modifiesFieldsButKeepsCreatedAt() {
-        NoteEntity existing = new NoteEntity(null, "OldT", "OldB", "oldImg", 999L);
-        existing.setId(7L);
-        when(noteRepository.findByIdAndOwner(7L, OWNER)).thenReturn(Optional.of(existing));
-        when(noteRepository.save(existing)).thenReturn(existing);
+    void update_delegatesToRepositoryAndMapsResult() {
+        // The atomic update happens in the repository (single transaction); the service
+        // delegates and maps the result. createdAt is preserved by the repository.
+        NoteEntity updatedEntity = new NoteEntity(null, "NewT", "NewB", null, 999L);
+        updatedEntity.setId(7L);
+        when(noteRepository.updateFields(7L, OWNER, "NewT", "NewB", null))
+                .thenReturn(Optional.of(updatedEntity));
 
         NoteDto input = new NoteDto();
         input.title = "NewT";
@@ -136,14 +137,29 @@ class NoteServiceImplTest {
     }
 
     @Test
+    void update_convertsNullBodyToEmptyString() {
+        NoteEntity entity = new NoteEntity(null, "T", "", null, 1L);
+        entity.setId(7L);
+        when(noteRepository.updateFields(7L, OWNER, "T", "", null))
+                .thenReturn(Optional.of(entity));
+
+        NoteDto input = new NoteDto();
+        input.title = "T"; // body left null
+
+        noteService.update(7L, OWNER, input);
+
+        verify(noteRepository).updateFields(7L, OWNER, "T", "", null);
+    }
+
+    @Test
     void update_throwsWhenNotOwned() {
-        when(noteRepository.findByIdAndOwner(7L, OWNER)).thenReturn(Optional.empty());
+        when(noteRepository.updateFields(anyLong(), anyLong(), any(), any(), any()))
+                .thenReturn(Optional.empty());
 
         NoteDto input = new NoteDto();
         input.title = "X";
 
         assertThrows(NoteNotFoundException.class, () -> noteService.update(7L, OWNER, input));
-        verify(noteRepository, never()).save(any(NoteEntity.class));
     }
 
     @Test
