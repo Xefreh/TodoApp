@@ -73,6 +73,16 @@ class AuthServiceImplTest {
     }
 
     @Test
+    void register_throwsWhenPasswordTooShort() {
+        assertThrows(WeakPasswordException.class, () -> authService.register("alice", "12345"));
+
+        // No lookup, no hash, no save: the policy rejects before any work.
+        verify(userRepository, never()).findByUsername(anyString());
+        verify(passwordHasher, never()).hash(anyString());
+        verify(userRepository, never()).save(any(UserEntity.class));
+    }
+
+    @Test
     void login_succeedsWhenPasswordMatches() {
         UserEntity stored = new UserEntity("alice", "hashed-pw");
         stored.setId(7L);

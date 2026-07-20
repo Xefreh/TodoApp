@@ -11,6 +11,9 @@ import fr.xefreh.todoapp.backend.repository.UserRepository;
  */
 public class AuthServiceImpl implements AuthService {
 
+    /** Minimum password length enforced on registration (matches the Android client rule). */
+    static final int MIN_PASSWORD_LENGTH = 6;
+
     private final UserRepository userRepository;
     private final PasswordHasher passwordHasher;
     private final TokenService tokenService;
@@ -25,6 +28,10 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResult register(String username, String password) {
+        // Server-side policy: never rely on client validation alone.
+        if (password == null || password.length() < MIN_PASSWORD_LENGTH) {
+            throw new WeakPasswordException(MIN_PASSWORD_LENGTH);
+        }
         if (userRepository.findByUsername(username) != null) {
             throw new UsernameTakenException(username);
         }
