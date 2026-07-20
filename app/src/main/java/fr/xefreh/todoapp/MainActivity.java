@@ -78,8 +78,6 @@ public class MainActivity extends AppCompatActivity {
 
 	private final ActivityResultLauncher<PickVisualMediaRequest> pickImageLauncher = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
 		if (uri != null) {
-			screen.photoCard.setVisibility(View.VISIBLE);
-			Glide.with(this).load(uri).centerCrop().into(screen.photoPreview);
 			importPickedImage(uri);
 		}
 	});
@@ -237,11 +235,23 @@ public class MainActivity extends AppCompatActivity {
 					throw new IOException("Could not open " + sourceUri);
 				}
 				Files.copy(in, destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				Uri importedUri = FileProvider.getUriForFile(MainActivity.this, getPackageName() + ".fileprovider", destFile);
 				photoFile = destFile;
-				photoUri = FileProvider.getUriForFile(MainActivity.this, getPackageName() + ".fileprovider", destFile);
+				photoUri = importedUri;
+				// Preview only now: what the user sees always matches what will be saved.
+				runOnUiThread(() -> {
+					screen.photoCard.setVisibility(View.VISIBLE);
+					Glide.with(this).load(importedUri).centerCrop().into(screen.photoPreview);
+				});
 			} catch (IOException e) {
 				Log.e("MainActivity", "Could not import picked image", e);
-				runOnUiThread(() -> Toast.makeText(MainActivity.this, "Could not import image", Toast.LENGTH_SHORT).show());
+				runOnUiThread(() -> {
+					// Clear any previous attachment: the hidden preview must not lie.
+					photoFile = null;
+					photoUri = null;
+					screen.photoCard.setVisibility(View.GONE);
+					Toast.makeText(MainActivity.this, "Could not import image", Toast.LENGTH_SHORT).show();
+				});
 			}
 		});
 	}
