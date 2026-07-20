@@ -37,6 +37,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import fr.xefreh.todoapp.data.ApiException;
 import fr.xefreh.todoapp.data.NotesRepository;
 import fr.xefreh.todoapp.data.NotesRepositoryImpl;
 import fr.xefreh.todoapp.data.SessionManager;
@@ -157,6 +158,11 @@ public class MainActivity extends AppCompatActivity {
 					// failure (ApiException, but also any unexpected RuntimeException).
 					runOnUiThread(() -> {
 						screen.saveButton.setEnabled(true);
+						if (e instanceof ApiException apiException
+								&& apiException.getHttpCode() == 401) {
+							redirectToLogin();
+							return;
+						}
 						Toast.makeText(MainActivity.this,
 								"Save failed: " + e.getMessage(),
 								Toast.LENGTH_LONG).show();
@@ -207,6 +213,14 @@ public class MainActivity extends AppCompatActivity {
 		}
 		isOpeningNotes = true;
 		startActivity(new Intent(this, NotesListActivity.class));
+	}
+
+	/** The session expired or was revoked: back to the login screen, clearing the task. */
+	private void redirectToLogin() {
+		Intent intent = new Intent(this, LoginActivity.class);
+		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+		startActivity(intent);
+		finish();
 	}
 
 	private void launchCamera() {

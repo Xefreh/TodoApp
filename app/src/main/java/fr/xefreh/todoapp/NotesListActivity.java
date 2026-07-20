@@ -99,6 +99,10 @@ public class NotesListActivity extends AppCompatActivity {
 			} catch (ApiException e) {
 				runOnUiThread(() -> {
 					screen.syncButton.setEnabled(true);
+					if (e.getHttpCode() == 401) {
+						redirectToLogin();
+						return;
+					}
 					Toast.makeText(NotesListActivity.this,
 							"Sync failed: " + e.getMessage(),
 							Toast.LENGTH_LONG).show();
@@ -122,6 +126,14 @@ public class NotesListActivity extends AppCompatActivity {
 		isReturningToEditor = true;
 		Intent intent = new Intent(this, MainActivity.class);
 		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+		startActivity(intent);
+		finish();
+	}
+
+	/** The session expired or was revoked: back to the login screen, clearing the task. */
+	private void redirectToLogin() {
+		Intent intent = new Intent(this, LoginActivity.class);
+		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 		startActivity(intent);
 		finish();
 	}
