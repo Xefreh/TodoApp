@@ -144,6 +144,9 @@ public class MainActivity extends AppCompatActivity {
 			// Read photoUri inside the task: the single-threaded executor guarantees a
 			// pending gallery-image copy submitted earlier has finished by then.
 			executorService.execute(() -> {
+				// Known limitation: imageUri is a device-local content URI (FileProvider),
+				// not a server-hosted file — photos never leave this device and are broken
+				// for any other client. A real fix requires an upload endpoint (out of scope).
 				String imageUri = photoUri != null ? photoUri.toString() : null;
 				try {
 					notesRepository.create(title, body, imageUri);
