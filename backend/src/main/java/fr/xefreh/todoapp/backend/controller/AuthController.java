@@ -23,6 +23,9 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class AuthController {
 
+    /** Username column limit — validated before hitting the DB. */
+    private static final int USERNAME_MAX_LENGTH = 255;
+
     private final AuthService authService;
 
     public AuthController(AuthService authService) {
@@ -69,6 +72,9 @@ public final class AuthController {
         if (credentials == null || credentials.username == null || credentials.username.isBlank()
                 || credentials.password == null || credentials.password.isBlank()) {
             throw new BadRequestResponse("username and password are required");
+        }
+        if (credentials.username.length() > USERNAME_MAX_LENGTH) {
+            throw new BadRequestResponse("username must be at most " + USERNAME_MAX_LENGTH + " characters");
         }
         return credentials;
     }

@@ -26,6 +26,10 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class NoteController {
 
+    /** Field limits, mirrored from {@code NoteEntity} columns — validated before hitting the DB. */
+    private static final int TITLE_MAX_LENGTH = 255;
+    private static final int BODY_MAX_LENGTH = 8192;
+
     private final NoteService noteService;
 
     public NoteController(NoteService noteService) {
@@ -108,6 +112,12 @@ public final class NoteController {
         }
         if (input == null || input.title == null || input.title.isBlank()) {
             throw new BadRequestResponse("title is required");
+        }
+        if (input.title.length() > TITLE_MAX_LENGTH) {
+            throw new BadRequestResponse("title must be at most " + TITLE_MAX_LENGTH + " characters");
+        }
+        if (input.body != null && input.body.length() > BODY_MAX_LENGTH) {
+            throw new BadRequestResponse("body must be at most " + BODY_MAX_LENGTH + " characters");
         }
         return input;
     }
