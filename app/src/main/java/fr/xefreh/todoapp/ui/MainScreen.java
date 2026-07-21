@@ -45,7 +45,7 @@ public final class MainScreen {
 				ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.MATCH_PARENT));
 
-		bottomNavigation = BottomNavigationFactory.create(context);
+		bottomNavigation = BottomNavigationHelper.create(context);
 		root.addView(bottomNavigation, new ConstraintLayout.LayoutParams(
 				0, ViewGroup.LayoutParams.WRAP_CONTENT));
 
@@ -66,7 +66,7 @@ public final class MainScreen {
 		heading.setText(R.string.title_new_note);
 		heading.setTextAppearance(ViewUtils.resolveStyle(
 				context, com.google.android.material.R.attr.textAppearanceHeadlineSmall));
-		LinearLayout.LayoutParams headingParams = matchWidthWrapHeight();
+		LinearLayout.LayoutParams headingParams = ViewUtils.matchWidthWrapHeight();
 		headingParams.bottomMargin = padding;
 		content.addView(heading, headingParams);
 
@@ -76,8 +76,8 @@ public final class MainScreen {
 		titleInput = new TextInputEditText(titleInputLayout.getContext());
 		titleInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
 		titleInput.setFilters(new InputFilter[]{new InputFilter.LengthFilter(TITLE_MAX_LENGTH)});
-		titleInputLayout.addView(titleInput, matchWidthWrapHeight());
-		content.addView(titleInputLayout, matchWidthWrapHeight());
+		titleInputLayout.addView(titleInput, ViewUtils.matchWidthWrapHeight());
+		content.addView(titleInputLayout, ViewUtils.matchWidthWrapHeight());
 
 		TextInputLayout bodyInputLayout = new TextInputLayout(
 				context, null, com.google.android.material.R.attr.textInputOutlinedStyle);
@@ -89,8 +89,8 @@ public final class MainScreen {
 				| InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
 		bodyInput.setMinLines(6);
 		bodyInput.setFilters(new InputFilter[]{new InputFilter.LengthFilter(BODY_MAX_LENGTH)});
-		bodyInputLayout.addView(bodyInput, matchWidthWrapHeight());
-		LinearLayout.LayoutParams bodyParams = matchWidthWrapHeight();
+		bodyInputLayout.addView(bodyInput, ViewUtils.matchWidthWrapHeight());
+		LinearLayout.LayoutParams bodyParams = ViewUtils.matchWidthWrapHeight();
 		bodyParams.topMargin = ViewUtils.dp(context, 12);
 		content.addView(bodyInputLayout, bodyParams);
 
@@ -98,7 +98,7 @@ public final class MainScreen {
 				context, null, com.google.android.material.R.attr.materialButtonOutlinedStyle);
 		attachPhotoButton.setText(R.string.action_add_photo);
 		attachPhotoButton.setIconResource(R.drawable.baseline_add_a_photo_24);
-		LinearLayout.LayoutParams attachParams = matchWidthWrapHeight();
+		LinearLayout.LayoutParams attachParams = ViewUtils.matchWidthWrapHeight();
 		attachParams.topMargin = ViewUtils.dp(context, 12);
 		content.addView(attachPhotoButton, attachParams);
 
@@ -110,13 +110,13 @@ public final class MainScreen {
 		photoPreview.setScaleType(ImageView.ScaleType.CENTER_CROP);
 		photoCard.addView(photoPreview, new ViewGroup.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT, ViewUtils.dp(context, 200)));
-		LinearLayout.LayoutParams photoParams = matchWidthWrapHeight();
+		LinearLayout.LayoutParams photoParams = ViewUtils.matchWidthWrapHeight();
 		photoParams.topMargin = ViewUtils.dp(context, 12);
 		content.addView(photoCard, photoParams);
 
 		saveButton = new MaterialButton(context);
 		saveButton.setText(R.string.action_save);
-		LinearLayout.LayoutParams saveParams = matchWidthWrapHeight();
+		LinearLayout.LayoutParams saveParams = ViewUtils.matchWidthWrapHeight();
 		saveParams.topMargin = padding;
 		content.addView(saveButton, saveParams);
 
@@ -139,17 +139,4 @@ public final class MainScreen {
 		constraints.applyTo(root);
 	}
 
-	public void selectCreateNavigationItem() {
-		bottomNavigation.setSelectedItemId(BottomNavigationFactory.NAV_CREATE);
-	}
-
-	public boolean isNotesNavigationItem(int itemId) {
-		return itemId == BottomNavigationFactory.NAV_NOTES;
-	}
-
-	private static LinearLayout.LayoutParams matchWidthWrapHeight() {
-		return new LinearLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT);
-	}
 }

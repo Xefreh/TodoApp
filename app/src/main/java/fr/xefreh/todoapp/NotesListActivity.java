@@ -21,6 +21,7 @@ import fr.xefreh.todoapp.data.ApiException;
 import fr.xefreh.todoapp.data.NotesRepository;
 import fr.xefreh.todoapp.data.NotesRepositoryImpl;
 import fr.xefreh.todoapp.data.SessionManager;
+import fr.xefreh.todoapp.ui.BottomNavigationHelper;
 import fr.xefreh.todoapp.ui.NotesListScreen;
 
 public class NotesListActivity extends AppCompatActivity {
@@ -36,6 +37,10 @@ public class NotesListActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		EdgeToEdge.enable(this);
+		if (!new SessionManager(this).isLoggedIn()) {
+			redirectToLogin();
+			return;
+		}
 
 		notesRepository = new NotesRepositoryImpl(
 				RetrofitProvider.getApi(),
@@ -54,10 +59,13 @@ public class NotesListActivity extends AppCompatActivity {
 		});
 		screen.notesList.setLayoutManager(new LinearLayoutManager(this));
 
-		screen.selectNotesNavigationItem();
+		BottomNavigationHelper.selectNotes(screen.bottomNavigation);
 		screen.bottomNavigation.setOnItemSelectedListener(item -> {
-			if (screen.isCreateNavigationItem(item.getItemId())) {
+			if (BottomNavigationHelper.isCreateItem(item.getItemId())) {
 				returnToEditor();
+			} else if (BottomNavigationHelper.isProfileItem(item.getItemId())) {
+				startActivity(new Intent(this, ProfileActivity.class));
+				finish();
 			}
 			return false;
 		});
@@ -97,7 +105,7 @@ public class NotesListActivity extends AppCompatActivity {
 					}
 				});
 			} catch (Exception e) {
-				// Catch-all (symmetric with MainActivity's save handler): the sync button
+				// Catch-all (symmetric with CreateNoteActivity's save handler): the sync button
 				// must always be re-enabled and the user informed, whatever the failure.
 				runOnUiThread(() -> {
 					screen.syncButton.setEnabled(true);
@@ -134,7 +142,7 @@ public class NotesListActivity extends AppCompatActivity {
 			return;
 		}
 		isReturningToEditor = true;
-		Intent intent = new Intent(this, MainActivity.class);
+		Intent intent = new Intent(this, CreateNoteActivity.class);
 		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		startActivity(intent);
 		finish();

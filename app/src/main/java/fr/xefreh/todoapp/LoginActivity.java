@@ -24,8 +24,8 @@ import retrofit2.Response;
  * Launcher (startup) screen: authenticates the user before accessing notes.
  *
  * <p>If a valid session already exists (stored token), redirects directly to
- * {@link MainActivity}. Otherwise shows the {@link AuthScreen} and, on successful
- * login/register, saves the session ({@link SessionManager}) then starts {@code MainActivity}.</p>
+ * {@link NotesListActivity}. Otherwise shows the {@link AuthScreen} and, on successful
+ * login/register, saves the session ({@link SessionManager}) then opens the notes list.</p>
  */
 public class LoginActivity extends AppCompatActivity {
 
@@ -42,15 +42,20 @@ public class LoginActivity extends AppCompatActivity {
 
         // Already logged in -> short-circuit the login screen.
         if (sessionManager.isLoggedIn()) {
-            startMainActivity();
+            startNotesListActivity();
             return;
         }
 
         screen = new AuthScreen(this);
         setContentView(screen.root);
+        int contentMargin = screen.root.getPaddingLeft();
         ViewCompat.setOnApplyWindowInsetsListener(screen.root, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            v.setPadding(
+                    systemBars.left + contentMargin,
+                    systemBars.top + contentMargin,
+                    systemBars.right + contentMargin,
+                    systemBars.bottom + contentMargin);
             return insets;
         });
 
@@ -110,7 +115,7 @@ public class LoginActivity extends AppCompatActivity {
                     Toast.makeText(LoginActivity.this,
                             register ? R.string.auth_success_register : R.string.auth_success_login,
                             Toast.LENGTH_SHORT).show();
-                    startMainActivity();
+                    startNotesListActivity();
                 } else if (response.code() == 401 || response.code() == 409) {
                     Toast.makeText(LoginActivity.this,
                             register ? R.string.auth_failed_register : R.string.auth_failed_login,
@@ -130,8 +135,8 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    private void startMainActivity() {
-        Intent intent = new Intent(this, MainActivity.class);
+    private void startNotesListActivity() {
+        Intent intent = new Intent(this, NotesListActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();

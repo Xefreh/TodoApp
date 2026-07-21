@@ -3,9 +3,12 @@
 
 	<string name="nav_new_note">New note</string>
 	<string name="nav_notes">Notes</string>
+	<string name="nav_profile">Profile</string>
 
 	<string name="title_new_note">New note</string>
 	<string name="title_notes">Notes</string>
+	<string name="title_profile">Profile settings</string>
+	<string name="label_username">Username</string>
 
 	<string name="hint_title">Title</string>
 	<string name="hint_body">Body</string>
@@ -15,6 +18,7 @@
 	<string name="action_save">Save</string>
 	<string name="action_sync">Sync</string>
 	<string name="action_add_photo">Add photo</string>
+	<string name="action_logout">Sign out</string>
 
 	<string name="photo_preview_description">Preview of the attached photo</string>
 	<string name="note_photo_description">Photo attached to the note</string>

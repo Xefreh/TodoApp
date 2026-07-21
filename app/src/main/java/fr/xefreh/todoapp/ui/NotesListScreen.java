@@ -43,7 +43,7 @@ public final class NotesListScreen {
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT));
 
-		bottomNavigation = BottomNavigationFactory.create(context);
+		bottomNavigation = BottomNavigationHelper.create(context);
 		root.addView(bottomNavigation, new ConstraintLayout.LayoutParams(
 				0, ViewGroup.LayoutParams.WRAP_CONTENT));
 
@@ -86,11 +86,4 @@ public final class NotesListScreen {
 		constraints.applyTo(root);
 	}
 
-	public void selectNotesNavigationItem() {
-		bottomNavigation.setSelectedItemId(BottomNavigationFactory.NAV_NOTES);
-	}
-
-	public boolean isCreateNavigationItem(int itemId) {
-		return itemId == BottomNavigationFactory.NAV_CREATE;
-	}
 }

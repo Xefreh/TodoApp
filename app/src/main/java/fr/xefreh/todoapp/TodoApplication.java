@@ -9,7 +9,7 @@ import fr.xefreh.todoapp.data.SessionManager;
  *
  * <p>Doing it here rather than in {@code LoginActivity} guarantees the API is available in
  * every process state — notably after a process death, where Android may restore
- * {@code MainActivity} directly without going through the launcher activity.</p>
+ * an authenticated activity directly without going through the launcher activity.</p>
  */
 public class TodoApplication extends Application {
 

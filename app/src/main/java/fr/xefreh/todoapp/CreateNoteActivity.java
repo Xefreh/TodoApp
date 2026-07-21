@@ -41,9 +41,10 @@ import fr.xefreh.todoapp.data.ApiException;
 import fr.xefreh.todoapp.data.NotesRepository;
 import fr.xefreh.todoapp.data.NotesRepositoryImpl;
 import fr.xefreh.todoapp.data.SessionManager;
+import fr.xefreh.todoapp.ui.BottomNavigationHelper;
 import fr.xefreh.todoapp.ui.MainScreen;
 
-public class MainActivity extends AppCompatActivity {
+public class CreateNoteActivity extends AppCompatActivity {
 
 	private static final String STATE_PHOTO_PATH = "state_photo_path";
 
@@ -59,9 +60,9 @@ public class MainActivity extends AppCompatActivity {
 		if (wasSaved) {
 			screen.photoCard.setVisibility(View.VISIBLE);
 			Glide.with(this).load(photoUri).centerCrop().into(screen.photoPreview);
-			Toast.makeText(MainActivity.this, getString(R.string.photo_saved_to, photoFile.getPath()), Toast.LENGTH_LONG).show();
+			Toast.makeText(CreateNoteActivity.this, getString(R.string.photo_saved_to, photoFile.getPath()), Toast.LENGTH_LONG).show();
 		} else {
-			Toast.makeText(MainActivity.this, R.string.photo_save_failed, Toast.LENGTH_SHORT).show();
+			Toast.makeText(CreateNoteActivity.this, R.string.photo_save_failed, Toast.LENGTH_SHORT).show();
 		}
 	});
 
@@ -74,11 +75,11 @@ public class MainActivity extends AppCompatActivity {
 				new AlertDialog.Builder(this)
 						.setTitle(R.string.camera_access_needed_title)
 						.setMessage(R.string.camera_access_rationale)
-						.setPositiveButton(R.string.action_try_again, (dialog, which) -> MainActivity.this.requestPermissionLauncher.launch(Manifest.permission.CAMERA))
+						.setPositiveButton(R.string.action_try_again, (dialog, which) -> CreateNoteActivity.this.requestPermissionLauncher.launch(Manifest.permission.CAMERA))
 						.setNegativeButton(R.string.action_cancel, null)
 						.show();
 			} else {
-				Toast.makeText(MainActivity.this, R.string.camera_permission_disabled, Toast.LENGTH_SHORT).show();
+				Toast.makeText(CreateNoteActivity.this, R.string.camera_permission_disabled, Toast.LENGTH_SHORT).show();
 			}
 		}
 	});
@@ -93,6 +94,10 @@ public class MainActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		EdgeToEdge.enable(this);
+		if (!new SessionManager(this).isLoggedIn()) {
+			redirectToLogin();
+			return;
+		}
 
 		notesRepository = new NotesRepositoryImpl(
 				RetrofitProvider.getApi(),
@@ -123,10 +128,12 @@ public class MainActivity extends AppCompatActivity {
 			return insets;
 		});
 
-		screen.selectCreateNavigationItem();
+		BottomNavigationHelper.selectCreate(screen.bottomNavigation);
 		screen.bottomNavigation.setOnItemSelectedListener(item -> {
-			if (screen.isNotesNavigationItem(item.getItemId())) {
+			if (BottomNavigationHelper.isNotesItem(item.getItemId())) {
 				openNotes();
+			} else if (BottomNavigationHelper.isProfileItem(item.getItemId())) {
+				startActivity(new Intent(this, ProfileActivity.class));
 			}
 			// Keep "New note" highlighted: this activity stays below the notes screen.
 			return false;
@@ -171,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
 					notesRepository.create(title, body, imageUri);
 					runOnUiThread(() -> {
 						screen.saveButton.setEnabled(true);
-						startActivity(new Intent(MainActivity.this, NotesListActivity.class));
+						startActivity(new Intent(CreateNoteActivity.this, NotesListActivity.class));
 					});
 				} catch (Exception e) {
 					// Catch-all: the save button must always be re-enabled, whatever the
@@ -183,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
 							redirectToLogin();
 							return;
 						}
-						Toast.makeText(MainActivity.this,
+						Toast.makeText(CreateNoteActivity.this,
 								getString(R.string.save_failed, e.getMessage()),
 								Toast.LENGTH_LONG).show();
 					});
@@ -201,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
 							boolean hasCamera = getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY);
 
 							if (!hasCamera) {
-								Toast.makeText(MainActivity.this, R.string.device_has_no_camera, Toast.LENGTH_SHORT).show();
+								Toast.makeText(CreateNoteActivity.this, R.string.device_has_no_camera, Toast.LENGTH_SHORT).show();
 								return;
 							}
 
@@ -276,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
 					throw new IOException("Could not open " + sourceUri);
 				}
 				Files.copy(in, destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-				Uri importedUri = FileProvider.getUriForFile(MainActivity.this, getPackageName() + ".fileprovider", destFile);
+				Uri importedUri = FileProvider.getUriForFile(CreateNoteActivity.this, getPackageName() + ".fileprovider", destFile);
 				photoFile = destFile;
 				photoUri = importedUri;
 				// Preview only now: what the user sees always matches what will be saved.
@@ -285,13 +292,13 @@ public class MainActivity extends AppCompatActivity {
 					Glide.with(this).load(importedUri).centerCrop().into(screen.photoPreview);
 				});
 			} catch (IOException e) {
-				Log.e("MainActivity", "Could not import picked image", e);
+				Log.e("CreateNoteActivity", "Could not import picked image", e);
 				runOnUiThread(() -> {
 					// Clear any previous attachment: the hidden preview must not lie.
 					photoFile = null;
 					photoUri = null;
 					screen.photoCard.setVisibility(View.GONE);
-					Toast.makeText(MainActivity.this, R.string.image_import_failed, Toast.LENGTH_SHORT).show();
+					Toast.makeText(CreateNoteActivity.this, R.string.image_import_failed, Toast.LENGTH_SHORT).show();
 				});
 			}
 		});

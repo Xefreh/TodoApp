@@ -64,7 +64,7 @@ public final class AuthScreen {
         heading = new TextView(context);
         heading.setTextAppearance(ViewUtils.resolveStyle(
                 context, com.google.android.material.R.attr.textAppearanceHeadlineMedium));
-        LinearLayout.LayoutParams headingParams = matchWidthWrapHeight();
+        LinearLayout.LayoutParams headingParams = ViewUtils.matchWidthWrapHeight();
         headingParams.bottomMargin = padding;
         content.addView(heading, headingParams);
 
@@ -74,8 +74,8 @@ public final class AuthScreen {
         usernameInput = new TextInputEditText(usernameLayout.getContext());
         usernameInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
         usernameInput.setFilters(new InputFilter[]{new InputFilter.LengthFilter(USERNAME_MAX_LENGTH)});
-        usernameLayout.addView(usernameInput, matchWidthWrapHeight());
-        LinearLayout.LayoutParams usernameParams = matchWidthWrapHeight();
+        usernameLayout.addView(usernameInput, ViewUtils.matchWidthWrapHeight());
+        LinearLayout.LayoutParams usernameParams = ViewUtils.matchWidthWrapHeight();
         content.addView(usernameLayout, usernameParams);
 
         passwordLayout = new TextInputLayout(
@@ -83,8 +83,8 @@ public final class AuthScreen {
         passwordLayout.setHint(R.string.hint_password);
         passwordInput = new TextInputEditText(passwordLayout.getContext());
         passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        passwordLayout.addView(passwordInput, matchWidthWrapHeight());
-        LinearLayout.LayoutParams passwordParams = matchWidthWrapHeight();
+        passwordLayout.addView(passwordInput, ViewUtils.matchWidthWrapHeight());
+        LinearLayout.LayoutParams passwordParams = ViewUtils.matchWidthWrapHeight();
         passwordParams.topMargin = ViewUtils.dp(context, 12);
         content.addView(passwordLayout, passwordParams);
 
@@ -93,19 +93,19 @@ public final class AuthScreen {
         passwordConfirmLayout.setHint(R.string.hint_password_confirm);
         passwordConfirmInput = new TextInputEditText(passwordConfirmLayout.getContext());
         passwordConfirmInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        passwordConfirmLayout.addView(passwordConfirmInput, matchWidthWrapHeight());
-        LinearLayout.LayoutParams confirmParams = matchWidthWrapHeight();
+        passwordConfirmLayout.addView(passwordConfirmInput, ViewUtils.matchWidthWrapHeight());
+        LinearLayout.LayoutParams confirmParams = ViewUtils.matchWidthWrapHeight();
         confirmParams.topMargin = ViewUtils.dp(context, 12);
         content.addView(passwordConfirmLayout, confirmParams);
 
         submitButton = new MaterialButton(context);
-        LinearLayout.LayoutParams submitParams = matchWidthWrapHeight();
+        LinearLayout.LayoutParams submitParams = ViewUtils.matchWidthWrapHeight();
         submitParams.topMargin = padding;
         content.addView(submitButton, submitParams);
 
         switchModeButton = new MaterialButton(
                 context, null, com.google.android.material.R.attr.materialButtonOutlinedStyle);
-        LinearLayout.LayoutParams switchParams = matchWidthWrapHeight();
+        LinearLayout.LayoutParams switchParams = ViewUtils.matchWidthWrapHeight();
         switchParams.topMargin = ViewUtils.dp(context, 4);
         content.addView(switchModeButton, switchParams);
 
@@ -133,9 +133,4 @@ public final class AuthScreen {
         return mode;
     }
 
-    private static LinearLayout.LayoutParams matchWidthWrapHeight() {
-        return new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-    }
 }

@@ -48,7 +48,7 @@ public final class NoteItemView extends MaterialCardView {
 		titleText = new TextView(context);
 		titleText.setTextAppearance(ViewUtils.resolveStyle(
 				context, com.google.android.material.R.attr.textAppearanceTitleMedium));
-		textContainer.addView(titleText, matchWidthWrapHeight());
+		textContainer.addView(titleText, ViewUtils.matchWidthWrapHeight());
 
 		bodyText = new TextView(context);
 		bodyText.setTextAppearance(ViewUtils.resolveStyle(
@@ -56,7 +56,7 @@ public final class NoteItemView extends MaterialCardView {
 		bodyText.setTextColor(resolveSecondaryTextColors(context));
 		bodyText.setEllipsize(TextUtils.TruncateAt.END);
 		bodyText.setMaxLines(3);
-		LinearLayout.LayoutParams bodyParams = matchWidthWrapHeight();
+		LinearLayout.LayoutParams bodyParams = ViewUtils.matchWidthWrapHeight();
 		bodyParams.topMargin = ViewUtils.dp(context, 4);
 		textContainer.addView(bodyText, bodyParams);
 	}
@@ -78,9 +78,4 @@ public final class NoteItemView extends MaterialCardView {
 				: ColorStateList.valueOf(value.data);
 	}
 
-	private static LinearLayout.LayoutParams matchWidthWrapHeight() {
-		return new LinearLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT);
-	}
 }

@@ -2,6 +2,8 @@ package fr.xefreh.todoapp.ui;
 
 import android.content.Context;
 import android.util.TypedValue;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 final class ViewUtils {
 	private ViewUtils() {
@@ -19,5 +21,11 @@ final class ViewUtils {
 		return context.getTheme().resolveAttribute(attribute, value, true)
 				? value.resourceId
 				: 0;
+	}
+
+	static LinearLayout.LayoutParams matchWidthWrapHeight() {
+		return new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
 	}
 }
