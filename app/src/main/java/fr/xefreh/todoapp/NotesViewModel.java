@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * Holds the notes list in memory for the list screen. The list is populated from the
- * server via {@code NotesRepository.fetchAll()} (see {@code NotesListActivity}) — there is
+ * server via {@code NotesRepository.fetchAll()} (see {@code NotesListFragment}) — there is
  * no local persistence; the ViewModel only survives configuration changes.
  */
 public class NotesViewModel extends ViewModel {

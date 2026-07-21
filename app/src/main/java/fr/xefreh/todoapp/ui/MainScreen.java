@@ -14,7 +14,6 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.widget.NestedScrollView;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
@@ -36,7 +35,6 @@ public final class MainScreen {
 	public final MaterialCardView photoCard;
 	public final ImageView photoPreview;
 	public final MaterialButton saveButton;
-	public final BottomNavigationView bottomNavigation;
 
 	public MainScreen(Context context) {
 		root = new ConstraintLayout(context);
@@ -44,10 +42,6 @@ public final class MainScreen {
 		root.setLayoutParams(new ViewGroup.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.MATCH_PARENT));
-
-		bottomNavigation = BottomNavigationHelper.create(context);
-		root.addView(bottomNavigation, new ConstraintLayout.LayoutParams(
-				0, ViewGroup.LayoutParams.WRAP_CONTENT));
 
 		NestedScrollView scroll = new NestedScrollView(context);
 		scroll.setId(View.generateViewId());
@@ -122,12 +116,6 @@ public final class MainScreen {
 
 		ConstraintSet constraints = new ConstraintSet();
 		constraints.clone(root);
-		constraints.connect(bottomNavigation.getId(), ConstraintSet.START,
-				ConstraintSet.PARENT_ID, ConstraintSet.START);
-		constraints.connect(bottomNavigation.getId(), ConstraintSet.END,
-				ConstraintSet.PARENT_ID, ConstraintSet.END);
-		constraints.connect(bottomNavigation.getId(), ConstraintSet.BOTTOM,
-				ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM);
 		constraints.connect(scroll.getId(), ConstraintSet.START,
 				ConstraintSet.PARENT_ID, ConstraintSet.START);
 		constraints.connect(scroll.getId(), ConstraintSet.END,
@@ -135,7 +123,7 @@ public final class MainScreen {
 		constraints.connect(scroll.getId(), ConstraintSet.TOP,
 				ConstraintSet.PARENT_ID, ConstraintSet.TOP);
 		constraints.connect(scroll.getId(), ConstraintSet.BOTTOM,
-				bottomNavigation.getId(), ConstraintSet.TOP);
+				ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM);
 		constraints.applyTo(root);
 	}
 

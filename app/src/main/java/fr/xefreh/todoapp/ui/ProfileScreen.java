@@ -10,7 +10,6 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.widget.NestedScrollView;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 
 import fr.xefreh.todoapp.R;
@@ -19,7 +18,6 @@ public final class ProfileScreen {
 	public final ConstraintLayout root;
 	public final TextView username;
 	public final MaterialButton logoutButton;
-	public final BottomNavigationView bottomNavigation;
 
 	public ProfileScreen(Context context) {
 		root = new ConstraintLayout(context);
@@ -27,10 +25,6 @@ public final class ProfileScreen {
 		root.setLayoutParams(new ViewGroup.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.MATCH_PARENT));
-
-		bottomNavigation = BottomNavigationHelper.create(context);
-		root.addView(bottomNavigation, new ConstraintLayout.LayoutParams(
-				0, ViewGroup.LayoutParams.WRAP_CONTENT));
 
 		NestedScrollView scroll = new NestedScrollView(context);
 		scroll.setId(View.generateViewId());
@@ -76,12 +70,6 @@ public final class ProfileScreen {
 
 		ConstraintSet constraints = new ConstraintSet();
 		constraints.clone(root);
-		constraints.connect(bottomNavigation.getId(), ConstraintSet.START,
-				ConstraintSet.PARENT_ID, ConstraintSet.START);
-		constraints.connect(bottomNavigation.getId(), ConstraintSet.END,
-				ConstraintSet.PARENT_ID, ConstraintSet.END);
-		constraints.connect(bottomNavigation.getId(), ConstraintSet.BOTTOM,
-				ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM);
 		constraints.connect(scroll.getId(), ConstraintSet.START,
 				ConstraintSet.PARENT_ID, ConstraintSet.START);
 		constraints.connect(scroll.getId(), ConstraintSet.END,
@@ -89,7 +77,7 @@ public final class ProfileScreen {
 		constraints.connect(scroll.getId(), ConstraintSet.TOP,
 				ConstraintSet.PARENT_ID, ConstraintSet.TOP);
 		constraints.connect(scroll.getId(), ConstraintSet.BOTTOM,
-				bottomNavigation.getId(), ConstraintSet.TOP);
+				ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM);
 		constraints.applyTo(root);
 	}
 

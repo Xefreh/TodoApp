@@ -24,8 +24,8 @@ import retrofit2.Response;
  * Launcher (startup) screen: authenticates the user before accessing notes.
  *
  * <p>If a valid session already exists (stored token), redirects directly to
- * {@link NotesListActivity}. Otherwise shows the {@link AuthScreen} and, on successful
- * login/register, saves the session ({@link SessionManager}) then opens the notes list.</p>
+ * {@link MainActivity}. Otherwise shows the {@link AuthScreen} and, on successful
+ * login/register, saves the session ({@link SessionManager}) then opens the authenticated host.</p>
  */
 public class LoginActivity extends AppCompatActivity {
 
@@ -42,7 +42,7 @@ public class LoginActivity extends AppCompatActivity {
 
         // Already logged in -> short-circuit the login screen.
         if (sessionManager.isLoggedIn()) {
-            startNotesListActivity();
+            startMainActivity();
             return;
         }
 
@@ -115,7 +115,7 @@ public class LoginActivity extends AppCompatActivity {
                     Toast.makeText(LoginActivity.this,
                             register ? R.string.auth_success_register : R.string.auth_success_login,
                             Toast.LENGTH_SHORT).show();
-                    startNotesListActivity();
+                    startMainActivity();
                 } else if (response.code() == 401 || response.code() == 409) {
                     Toast.makeText(LoginActivity.this,
                             register ? R.string.auth_failed_register : R.string.auth_failed_login,
@@ -135,8 +135,8 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    private void startNotesListActivity() {
-        Intent intent = new Intent(this, NotesListActivity.class);
+    private void startMainActivity() {
+        Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
