@@ -12,8 +12,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 /**
  * Provides a singleton {@link TodoApi} (Retrofit) pointing to the local backend.
  *
- * <p>{@code baseUrl} uses {@code 10.0.2.2}, which from the Android emulator maps to the
- * host machine's {@code localhost} (where the Javalin server runs on port 7000).
+ * <p>{@code baseUrl} uses the development machine's local network address so a physical
+ * Android device on the same Wi-Fi network can reach Javalin on port 7000.
  * Traffic is plain HTTP: allowed via {@code network_security_config.xml} for this
  * domain only.</p>
  *
@@ -22,8 +22,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 public final class RetrofitProvider {
 
-    /** Base URL of the backend, reachable from the emulator via the host network alias. */
-    public static final String BASE_URL = "http://10.0.2.2:7000/api/";
+    /** Base URL of the backend, reachable from a device on the same local network. */
+    public static final String BASE_URL = "http://192.168.1.11:7000/api/";
 
     private static volatile TodoApi api;
 
